@@ -4,11 +4,6 @@
 #
 #
 
-set -e
-
-. ~/debian/debutant/functions
-
-
 # 1) zipfile must be downloaded manually e.g. from
 #URL=http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.07.10_MegaCLI_Linux.zip
 
