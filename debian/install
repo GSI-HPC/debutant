@@ -1,1 +1,2 @@
-recipes usr/share/debutant
+debutant usr/bin
+recipes usr/lib/debutant
