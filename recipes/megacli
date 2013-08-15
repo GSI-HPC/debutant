@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+# debianize the LSI Megaraid SNMP agent
+#
+#
+
+set -e
+
+. ~/debian/debutant/functions
+
+
+# 1) zipfile must be downloaded manually e.g. from
+#URL=http://www.lsi.com/downloads/Public/MegaRAID%20Common%20Files/8.07.10_MegaCLI_Linux.zip
+
+#ARCHIVE=`fetch $URL`
+
+ARCHIVE=$1
+
+# megacli comes as a rpm inside a zip file -> double extraction
+TMPDIR=`mktemp -d -p .`
+
+extract $ARCHIVE $TMPDIR
+
+prepare
+
+extract "`find $TMPDIR -name 'MegaCli-*.noarch.rpm'`"
+
+rm -r $TMPDIR
+
+cd $BUILD_DIR/MegaCli*
+
+# replace the alien debian/rules with our own minimal version
+debian_rules
+
+ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+
+debian_control Architecture $ARCH
+debian_control Section non-free/admin
+
+case $ARCH in
+    i386)
+        megacli=/opt/MegaRAID/MegaCli/MegaCli
+        ;;
+    amd64)
+        megacli=/opt/MegaRAID/MegaCli/MegaCli64
+        ;;
+    *)
+        abort Unsupported architecture
+        ;;
+esac
+
+cat <<EOF > debian/install
+$megacli usr/sbin
+EOF
+
+# disable the postinst etc imported from the RPM 
+disable_install_scripts
+
+# build the package
+debuild -b -uc
+
+cd ../..
+
+#cleanup

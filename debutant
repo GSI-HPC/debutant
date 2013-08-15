@@ -1,0 +1,138 @@
+#
+#
+#
+#
+#
+
+#
+# helper function definitions:
+#
+
+abort() {
+    echo $* >&2
+    exit 1
+}
+
+
+add_dependency() {
+    for PKG in $@; do
+        grep -q "^Depends: .*\<$PKG\>" $DIR/DEBIAN/control \
+            || sed -i -e "s/^\(Depends: .*\)/\1, $PKG/" $DIR/DEBIAN/control
+    done
+}
+
+
+cleanup() {
+    [ -d $BUILD_DIR ] && rm -r $BUILD_DIR
+}
+
+# change an option in debian/control
+debian_control()  {
+    local key=$1
+    local value=$2
+    sed -i -e "s|^\($key:\) .*|\1 $value|" debian/control    
+}
+
+
+debian_rules() {
+    [ -e debian/rules ] && cp debian/rules debian/rules.orig
+    cat > debian/rules <<EOF
+#!/usr/bin/make -f
+%:
+EOF
+# emacs tends to turn tabs into spaces, we'll clarify this:
+    echo "\tdh \$@" >> debian/rules
+}
+
+
+debian_install() {
+    :
+}
+
+
+# move pkg install scripts out of the way
+#  TODO: Add them to the pkg documentation
+disable_install_scripts() {
+    #mkdir -vp $DIR/usr/share/doc/$PKG_NAME/original_install_scripts
+    for script in preinst postinst prerm postrm; do
+        [ -r debian/$script ] \
+            && mv -v debian/$script debian/$script.orig
+    #[ -r $script ] && sed -i -e "1c#\!/bin/sh -x" $script
+    done
+}
+
+
+extract() {
+    local blob="$1"
+    local dir=$2
+    local mime=`file --brief --mime-type "$blob"`
+
+    [ "$dir" ] || dir=$BUILD_DIR
+
+    case $mime in
+
+        application/x-gzip)
+            case $blob in
+                *.tar.gz|*.tgz)
+                    tar xfz $blob -C $dir
+                    ;;
+                *)
+                    gunzip -cd > $dir/`basename "$blob" .gz`
+                    ;;
+            esac
+            ;;
+        
+        application/zip)
+            unzip -d $dir $blob
+            ;;
+
+        application/x-dosexec)
+            cabextract -d $dir $blob
+            ;;
+
+        application/x-rpm)
+            (
+                archive=`readlink -f "$blob"`
+                cd $dir
+                fakeroot alien -dsg --scripts --verbose "$archive"
+            )
+            ;;
+        
+        *)
+            abort "Unknown archive type $mine for $blob"
+            ;;
+    esac
+}
+
+
+fetch() {
+    local url=$1
+    
+    # guess the filename from the Location: header of the HTTP response
+    #  (to prevent downloaded files being called 'download' aso.
+    filename=`curl -I $url | sed -ne "s|Location: .*/\(.*\)\(?.*\)|\1|p"`
+    # fallback:
+    [ "$filename" ] || filename=`basename $url`
+    curl -o $filename $url
+    echo $filename
+}
+
+
+prepare() {
+    # some preparations:
+    ME=`whoami`
+    [ "$DEBEMAIL" ] || DEBEMAIL="$ME@"`hostname -f`
+    [ "$DEBFULLNAME" ] || DEBFULLNAME=`getent passwd $ME | cut -f 5 -d : | cut -f 1 -d,`
+    
+    BUILD_DIR=`mktemp -d -p .`
+}
+
+
+#########
+#
+#
+
+RECIPE=$1
+shift
+
+recipes/$RECIPE $@
