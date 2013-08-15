@@ -1,11 +1,22 @@
+#!/bin/sh
 #
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+###################
 #
-# helper function definitions:
+# helper function definitions for recipes:
 #
 
 abort() {
@@ -41,7 +52,7 @@ debian_rules() {
 %:
 EOF
 # emacs tends to turn tabs into spaces, we'll clarify this:
-    echo "\tdh \$@" >> debian/rules
+    /bin/echo -e "\tdh \$@" >> debian/rules
 }
 
 
@@ -127,12 +138,36 @@ prepare() {
     BUILD_DIR=`mktemp -d -p .`
 }
 
+#export these functions to subshells (ie. our recipes):
+export abort add_dependency cleanup debian_control debian_rules \
+    disable_install_scripts extract fetch prepare 
 
 #########
 #
+# minimal recipe invocation logic
 #
+
+# search path for recipes:
+RECIPE_DIRS=`dirname $0`/recipes /usr/lib/debutant/recipes
+
+# ... /usr/local/lib/debutant/recipes??, /var/lib/debutant/recipes???
 
 RECIPE=$1
 shift
 
-recipes/$RECIPE $@
+FOUND=
+
+# TODO: preparations could be performed here, not inside recipes
+
+for D in $RECIPE_DIRS; do
+    [ -d $D ] || continue
+    if [ -e $D/$RECIPE ]; then
+        FOUND=1
+        . `dirname $0`/recipes/$RECIPE $@
+        break
+    fi
+done
+
+[ "$FOUND" ] || abort "No recipe found for '$RECIPE'"
+
+# TODO: cleanup could be performed here, not inside recipes
