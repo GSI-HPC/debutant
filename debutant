@@ -25,10 +25,28 @@ abort() {
 }
 
 
+# Add a dependency to debian/control
+#  -b : Add a build-dependency
 add_dependency() {
+    local depends="Depends"
+
+    if [ "$1" = "-b" ]; then
+        depends="Build-Depends"
+        shift
+    fi
+
     for PKG in $@; do
-        grep -q "^Depends: .*\<$PKG\>" $DIR/DEBIAN/control \
-            || sed -i -e "s/^\(Depends: .*\)/\1, $PKG/" $DIR/DEBIAN/control
+        grep -q "^${depends}: .*\<$PKG\>" $DIR/DEBIAN/control \
+            || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $DIR/DEBIAN/control
+    done
+}
+
+
+# add a build dependency to debian/control
+build_depends() {
+    for PKG in $@; do
+        add_dependency -b $PKG
+        # TODO: install it if required ?!
     done
 }
 
@@ -36,6 +54,7 @@ add_dependency() {
 cleanup() {
     [ -d $BUILD_DIR ] && rm -r $BUILD_DIR
 }
+
 
 # change an option in debian/control
 debian_control()  {
@@ -53,9 +72,21 @@ debian_rules() {
 EOF
 # emacs tends to turn tabs into spaces, we'll clarify this:
     /bin/echo -e "\tdh \$@" >> debian/rules
+
+    # stripping the provided binaries may or may not be a good idea
+    # and breaks building for foreign architectures
+    echo "override_dh_strip:" >> debian/rules
 }
 
 
+# Not implemented yet: add an override to a dh-style debian/rules file
+#  (as created by debian_rules (see above) or dh_make
+debian_rules_add_override() {
+    :
+}
+
+
+# Not implemented yet
 debian_install() {
     :
 }
@@ -148,7 +179,7 @@ export abort add_dependency cleanup debian_control debian_rules \
 #
 
 # search path for recipes:
-RECIPE_DIRS=`dirname $0`/recipes /usr/lib/debutant/recipes
+RECIPE_DIRS="`dirname $0`/recipes /usr/lib/debutant/recipes"
 
 # ... /usr/local/lib/debutant/recipes??, /var/lib/debutant/recipes???
 
@@ -157,12 +188,13 @@ shift
 
 FOUND=
 
-# TODO: preparations could be performed here, not inside recipes
-
 for D in $RECIPE_DIRS; do
     [ -d $D ] || continue
     if [ -e $D/$RECIPE ]; then
         FOUND=1
+
+        # preparations are performed here, not inside recipes
+        prepare
         . `dirname $0`/recipes/$RECIPE $@
         break
     fi
