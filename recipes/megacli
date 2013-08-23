@@ -16,8 +16,6 @@ TMPDIR=`mktemp -d -p .`
 
 extract $ARCHIVE $TMPDIR
 
-prepare
-
 extract "`find $TMPDIR -name 'MegaCli-*.noarch.rpm'`"
 
 rm -r $TMPDIR
