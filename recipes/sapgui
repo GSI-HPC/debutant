@@ -1,0 +1,38 @@
+# -*- sh -*-
+#
+# packaging for the SAP java client SAPGUI
+#  cf. http://scn.sap.com/community/gui
+#
+
+
+PACKAGE=sapgui
+INSTALL_JAR=$1
+
+# HACK: we gather the version from the Jar filename
+#  and seperate all digits with dots
+VERSION=`echo $INSTALL_JAR | sed -e "s/^PlatinGUI\([0-9]\+\)Linux.*/\1/;s/[0-9]/&./g;s/\.$//"`
+
+# create a subdir for packaging
+PKG_DIR=${BUILD_DIR}/${PACKAGE}-${VERSION}
+ 
+mkdir ${PKG_DIR}
+
+# link the jar file to the package dir:
+cp -l $INSTALL_JAR $PKG_DIR
+
+cd ${PKG_DIR}
+
+dh_make -y -s --native
+
+# this command installs the SAPgui
+INSTALL_CMD="java -jar $INSTALL_JAR  --nogui --verbose --force --nostandard --prefix debian/${PACKAGE} --installdir /usr/share --logfile $BUILD_DIR/install.log"
+
+# we hook this into debian/rules:
+/bin/echo -e "\noverride_dh_auto_install:\n\t$INSTALL_CMD" >> debian/rules
+
+#build_depends libstdc++6:i386
+
+#debian_control Architecture i386
+debian_control Section non-free/busywork
+
+debuild -b -uc
