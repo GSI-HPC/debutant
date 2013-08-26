@@ -104,6 +104,17 @@ disable_install_scripts() {
 }
 
 
+# copy over the created debs:
+drop_result() {
+    if [ "$1" ]; then
+        cp $@ .
+    else
+        cp $BUILD_DIR/*.deb .
+    fi
+}
+
+
+# detect the archive type of the given archive and extract it
 extract() {
     local blob="$1"
     local dir=$2
