@@ -8,9 +8,13 @@
 PACKAGE=sapgui
 INSTALL_JAR=$1
 
+[ "$INSTALL_JAR" ] || abort Need an archive to extract sapgui from
+
 # HACK: we gather the version from the Jar filename
 #  and seperate all digits with dots
-VERSION=`echo $INSTALL_JAR | sed -e "s/^PlatinGUI\([0-9]\+\)Linux.*/\1/;s/[0-9]/&./g;s/\.$//"`
+VERSION=`basename $INSTALL_JAR | sed -e "s/^PlatinGUI\([0-9]\+\)Linux.*/\1/;s/[0-9]/&./g;s/\.$//"`
+
+[ "$VERSION" ] || abort Could not guess version from .jar filename
 
 # create a subdir for packaging
 PKG_DIR=${BUILD_DIR}/${PACKAGE}-${VERSION}
@@ -18,8 +22,9 @@ PKG_DIR=${BUILD_DIR}/${PACKAGE}-${VERSION}
 mkdir ${PKG_DIR}
 
 # link the jar file to the package dir:
-cp -l $INSTALL_JAR $PKG_DIR
+cp $INSTALL_JAR $PKG_DIR
 
+(
 cd ${PKG_DIR}
 
 dh_make -y -s --native
@@ -35,4 +40,7 @@ INSTALL_CMD="java -jar $INSTALL_JAR  --nogui --verbose --force --nostandard --pr
 #debian_control Architecture i386
 debian_control Section non-free/busywork
 
-debuild -b -uc
+debuild -b -uc -us
+)
+
+drop_result
