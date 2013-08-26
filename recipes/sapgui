@@ -30,7 +30,7 @@ INSTALL_CMD="java -jar $INSTALL_JAR  --nogui --verbose --force --nostandard --pr
 # we hook this into debian/rules:
 /bin/echo -e "\noverride_dh_auto_install:\n\t$INSTALL_CMD" >> debian/rules
 
-#build_depends libstdc++6:i386
+#build_depends lib32stdc++6 [amd64]
 
 #debian_control Architecture i386
 debian_control Section non-free/busywork
