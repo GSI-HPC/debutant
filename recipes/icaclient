@@ -1,0 +1,166 @@
+#!/bin/sh
+#
+# extract ICAclient package and repack it to be suitable for GSI
+#
+# $Id: ica_repack 18509 2012-10-30 17:38:31Z christo $
+# 
+
+REVISION=1
+TARGET_RELEASE=`lsb_release -cs`
+ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
+
+while getopts "v:t:a:" OPTION; do
+    case $OPTION in 
+        a)
+            ARCH=$OPTARG
+            ;;
+        t)
+            TARGET_RELEASE=$OPTARG
+            ;;
+        v)
+            REVISION=$(($OPTARG))
+            ;;
+    esac
+done
+
+shift $(($OPTIND - 1))
+
+PKG=$1
+
+[ $PKG ] || abort Need an archive to extract icaclient
+
+# icaclient comes as a Debian package but we repackage it: 
+PKG_NAME=`dpkg-deb -I $PKG | sed -ne "s/ Package: //p"`
+
+# determine version, add dbtnt suffix if missing:
+VERSION=`dpkg-deb -I $PKG | sed -ne "s/ Version: //p"`
+if ! expr "$VERSION" : ".*+dbtnt\.[0-9]\+$" > /dev/null; then
+    VERSION="${VERSION}+dbtnt.${REVISION}"
+fi
+
+PKG_DIR="$BUILD_DIR/${PKG_NAME}_${VERSION}_${ARCH}"
+
+mkdir $PKG_DIR
+
+# extract normal package contents
+dpkg-deb -x $PKG $PKG_DIR
+
+# extract debian metadata to DEBIAN subdir
+dpkg-deb -e $PKG $PKG_DIR/debian
+
+cd $PKG_DIR
+
+debian_control Version      ${VERSION}
+debian_control Architecture ${ARCH}
+
+
+# Squeeze/AMD64 needs a 32bit libmotif:
+if [ "$TARGET_RELEASE" = "squeeze" -a "$ARCH" = "amd64" ]; then
+    add_dependency ia32-libmotif4 nspluginwrapper
+else
+    add_dependency libmotif4
+fi
+
+# relocate /opt to /usr/lib - was not required before 12.1
+#mkdir -v $PKG_DIR/usr/lib
+#mv -v $PKG_DIR/opt/Citrix/ICAClient $PKG_DIR/usr/lib
+#rmdir -vp $PKG_DIR/opt/Citrix
+#sed -i -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/DEBIAN/md5sums $PKG_DIR/usr/share/menu/icaclient
+
+debian_install opt/Citrix/ICAClient /usr/lib/ICAClient
+
+
+# TODO: hook in our ca certs:
+#cp -v /usr/local/share/ca-certificates/*crt \
+#    $PKG_DIR/usr/lib/ICAClient/keystore/cacerts
+
+
+# redirect config to /etc - no longer required for 12.1
+#mkdir -p $PKG_DIR/etc/icaclient
+#mv $PKG_DIR/usr/lib/ICAClient/config/* $PKG_DIR/etc/icaclient
+#rm -r $PKG_DIR/usr/lib/ICAClient/config
+#ln -s /etc/icaclient $PKG_DIR/usr/lib/ICAClient/config
+#cp $PKG_DIR/usr/lib/ICAClient/nls/en/*.ini $PKG_DIR/etc/icaclient
+#sed  -i -e "s#/usr/lib/ICAClient/\(config/\|nls/en/\)#/etc/icaclient/#;\|/usr/lib/ICAClient/nls/|d" \
+#    $PKG_DIR/DEBIAN/conffiles
+
+
+# link the default NLS files to the config dir:
+#( 
+#    ln -vs en  $PKG_DIR/etc/icaclient/nls/current
+#    for INI in $PKG_DIR/etc/icaclient/nls/current/*ini; do
+#        cd $PKG_DIR/usr/lib/ICAClient/config
+#        ln -vs /etc/icaclient/nls/current/`basename $INI` .
+#    done
+#)
+
+#cat <<EOF > $PKG_DIR/debian/links
+#/etc/icaclient/nls/en           /etc/icaclient/nls/current
+#/etc/icaclient/nls/current/*ini /usr/lib/ICAClient/config
+#EOF
+
+
+# move pkg install scripts out of the way for now:
+disable_install_scripts
+
+# #for script in postinst postrm; do
+#     cat <<-EOF > $PKG_DIR/DEBIAN/$script
+# #!/bin/sh
+
+# set -e
+# #set -x
+
+# EOF
+#     chmod a+rx $PKG_DIR/DEBIAN/$script
+# done
+
+# install the plugin:
+case $ARCH in
+    i386)
+        # create a link for the plugin (i386 only)
+        mkdir -p $PKG_DIR/usr/lib/iceweasel/plugins
+        ln -vs /usr/lib/ICAClient/npica.so $PKG_DIR/usr/lib/iceweasel/plugins
+        ;;
+    amd64)
+
+        if [ "$TARGET_RELEASE" = "squeeze" ]; then
+        # we have to wrap the plugin at install time:
+            cat <<-EOF >> $PKG_DIR/DEBIAN/postinst
+nspluginwrapper -i /usr/lib/ICAClient/npica.so
+EOF
+        
+        # remove the nspluginwrapper'd plugins
+            cat <<-EOF >> $PKG_DIR/DEBIAN/postrm
+for i in \`nspluginwrapper -l | grep npwrapper.npica\`
+do
+    test -e \$i && nspluginwrapper -r \$i 2>/dev/null
+done
+EOF
+        fi
+        ;;
+esac
+
+# should be performed by dh:
+#for script in postinst postrm; do
+#    for module in menu debconf; do
+#        test -r  /usr/share/debhelper/autoscripts/${script}-${module}  \
+#            && cat /usr/share/debhelper/autoscripts/${script}-${module} >> $PKG_DIR/DEBIAN/$script
+#    done
+#done
+
+#### 
+#
+# finish it up
+#
+
+#d5sums
+
+# Build modifies .deb
+#fakeroot dpkg-deb -b $PKG_DIR
+
+#intian $PKG_DIR.deb
+
+build_package
+
+drop_result
+
