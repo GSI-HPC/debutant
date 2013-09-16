@@ -36,11 +36,16 @@ add_dependency() {
     fi
 
     for PKG in $@; do
-        grep -q "^${depends}: .*\<$PKG\>" $PKG_DIR/DEBIAN/control \
-            || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $PKG_DIR/DEBIAN/control
+        grep -q "^${depends}: .*\<$PKG\>" $PKG_DIR/debian/control \
+            || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $PKG_DIR/debian/control
     done
 }
 
+# sometimes we want to build i386 packages on amd64
+build_architecture() {
+    export DEB_HOST_ARCH=$1
+    debian_control Architecture $DEB_HOST_ARCH
+}
 
 # add a build dependency to debian/control
 build_depends() {
@@ -51,7 +56,7 @@ build_depends() {
 }
 
 build_package() {
-    ( cd $PKG_DIR; debuild -b -us -uc)
+    ( cd $PKG_DIR; debuild -b -us -uc -a${DEB_HOST_ARCH})
 }
 
 cleanup() {
