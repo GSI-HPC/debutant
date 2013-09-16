@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# debianize the LSI Megaraid SNMP agent
+#
+#
+
+URL='http://downloadmirror.intel.com/19186/eng/PREBOOT.EXE'
+PKG_NAME="intel-bootmanager"
+
+prepare
+
+ARCHIVE=`fetch $URL`
+
+extract $ARCHIVE
+
+cd $BUILD_DIR
+
+debian_rules 
+
+debian_control Section non-free/admin
+
+#add_dependency -P msm-gui libjaxen-java liblog4j1.2-java
+ 
+debuild -b -uc -us
+
+#cleanup
