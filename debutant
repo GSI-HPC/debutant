@@ -36,8 +36,8 @@ add_dependency() {
     fi
 
     for PKG in $@; do
-        grep -q "^${depends}: .*\<$PKG\>" $DIR/DEBIAN/control \
-            || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $DIR/DEBIAN/control
+        grep -q "^${depends}: .*\<$PKG\>" $PKG_DIR/DEBIAN/control \
+            || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $PKG_DIR/DEBIAN/control
     done
 }
 
@@ -50,6 +50,9 @@ build_depends() {
     done
 }
 
+build_package() {
+    ( cd $PKG_DIR; debuild -b -us -uc)
+}
 
 cleanup() {
     [ -d $BUILD_DIR ] && rm -r $BUILD_DIR
@@ -60,22 +63,22 @@ cleanup() {
 debian_control()  {
     local key=$1
     local value=$2
-    sed -i -e "s|^\($key:\) .*|\1 $value|" debian/control    
+    sed -i -e "s|^\($key:\) .*|\1 $value|" ${PKG_DIR}/debian/control    
 }
 
 
 debian_rules() {
-    [ -e debian/rules ] && cp debian/rules debian/rules.orig
-    cat > debian/rules <<EOF
+    [ -e ${PKG_DIR}/debian/rules ] && cp ${PKG_DIR}/debian/rules ${PKG_DIR}/debian/rules.orig
+    cat > ${PKG_DIR}/debian/rules <<EOF
 #!/usr/bin/make -f
 %:
 EOF
 # emacs tends to turn tabs into spaces, we'll clarify this:
-    /bin/echo -e "\tdh \$@" >> debian/rules
+    /bin/echo -e "\tdh \$@" >> ${PKG_DIR}/debian/rules
 
     # stripping the provided binaries may or may not be a good idea
     # and breaks building for foreign architectures
-    echo "override_dh_strip:" >> debian/rules
+    echo "override_dh_strip:" >> ${PKG_DIR}/debian/rules
 }
 
 
@@ -86,21 +89,27 @@ debian_rules_add_override() {
 }
 
 
-# Not implemented yet
+# add something to debian/install
 debian_install() {
-    :
+    echo $@ >> $PKG_DIR/debian/install
+}
+
+# add something to debian/docs
+debian_installdocs() {
+    echo $@ >> $PKG_DIR/debian/docs
 }
 
 
 # move pkg install scripts out of the way
 #  TODO: Add them to the pkg documentation
 disable_install_scripts() {
-    #mkdir -vp $DIR/usr/share/doc/$PKG_NAME/original_install_scripts
+    SCRIPT_DIR=debutant/original_install_scripts
+    mkdir -vp $PKG_DIR/$SCRIPT_DIR
     for script in preinst postinst prerm postrm; do
-        [ -r debian/$script ] \
-            && mv -v debian/$script debian/$script.orig
-    #[ -r $script ] && sed -i -e "1c#\!/bin/sh -x" $script
+        [ -r ${PKG_DIR}/debian/$script ] \
+            && mv -v ${PKG_DIR}/debian/$script $PKG_DIR/$SCRIPT_DIR
     done
+    debian_installdocs $SCRIPT_DIR/
 }
 
 
@@ -109,7 +118,7 @@ drop_result() {
     if [ "$1" ]; then
         cp $@ .
     else
-        cp $BUILD_DIR/*.deb .
+        cp $BUILD_DIR/*.deb $BUILD_DIR/*.changes $BUILD_DIR/*.build .
     fi
 }
 
@@ -203,10 +212,14 @@ for D in $RECIPE_DIRS; do
     [ -d $D ] || continue
     if [ -e $D/$RECIPE ]; then
         FOUND=1
+        
+        set -e
+        [ $DEBUG ] && set -x
 
         # preparations are performed here, not inside recipes
         prepare
         . `dirname $0`/recipes/$RECIPE $@
+        [ $DEBUG ] && set +x
         break
     fi
 done

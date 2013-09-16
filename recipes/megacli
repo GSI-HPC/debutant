@@ -22,38 +22,34 @@ extract "`find $TMPDIR -name 'MegaCli-*.noarch.rpm'`"
 
 rm -r $TMPDIR
 
-(
-    cd $BUILD_DIR/MegaCli*
+# we search for the dir with the debian subdir:
+PKG_DIR=`find ${BUILD_DIR} -type d -name debian -exec dirname {} \;`
 
-    # replace the alien debian/rules with our own minimal version
-    debian_rules
+# replace the alien debian/rules with our own minimal version
+debian_rules
 
-    ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
 
-    debian_control Architecture $ARCH
-    debian_control Section non-free/admin
+debian_control Architecture $ARCH
+debian_control Section non-free/admin
 
-    case $ARCH in
-        i386)
-            megacli=/opt/MegaRAID/MegaCli/MegaCli
-            ;;
-        amd64)
-            megacli=/opt/MegaRAID/MegaCli/MegaCli64
-            ;;
-        *)
-            abort Unsupported architecture
-            ;;
-    esac
+case $ARCH in
+    i386)
+        megacli=/opt/MegaRAID/MegaCli/MegaCli
+        ;;
+    amd64)
+        megacli=/opt/MegaRAID/MegaCli/MegaCli64
+        ;;
+    *)
+        abort Unsupported architecture
+        ;;
+esac
 
-    cat <<EOF > debian/install
-$megacli usr/sbin
-EOF
+debian_install $megacli usr/sbin
 
 # disable the postinst etc imported from the RPM 
-    disable_install_scripts
-
-# build the package
-    debuild -b -uc
-)
+disable_install_scripts
+    
+build_package
 
 drop_result
