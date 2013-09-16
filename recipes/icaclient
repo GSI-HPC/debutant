@@ -38,7 +38,7 @@ if ! expr "$VERSION" : ".*+dbtnt\.[0-9]\+$" > /dev/null; then
     VERSION="${VERSION}+dbtnt.${REVISION}"
 fi
 
-PKG_DIR="$BUILD_DIR/${PKG_NAME}_${VERSION}_${ARCH}"
+PKG_DIR="$BUILD_DIR/${PKG_NAME}-${VERSION}"
 
 mkdir $PKG_DIR
 
@@ -46,12 +46,35 @@ mkdir $PKG_DIR
 dpkg-deb -x $PKG $PKG_DIR
 
 # extract debian metadata to DEBIAN subdir
-dpkg-deb -e $PKG $PKG_DIR/debian
+mkdir -p $PKG_DIR/debutant/DEBIAN
+dpkg-deb -e $PKG $PKG_DIR/debutant/DEBIAN
 
-cd $PKG_DIR
+# create package skeleton:
+( cd ${PKG_DIR}; dh_make -y -s --native )
 
-debian_control Version      ${VERSION}
-debian_control Architecture ${ARCH}
+debian_rules
+
+# not all dependencies are resolvable (on Wheezy)
+echo "override_dh_shlibdeps:" >> ${PKG_DIR}/debian/rules
+
+# keep the original copyright
+cp $PKG_DIR/usr/share/doc/icaclient/copyright         $PKG_DIR/debian/
+
+# append the original changelog:
+zcat $PKG_DIR/usr/share/doc/icaclient/changelog.gz >> $PKG_DIR/debian/changelog
+
+# modify the extracted debian/control:
+( 
+    cat <<EOF 
+Source: icaclient
+Build-depends: ia32-libs-gtk, libmotif4, libspeex1
+Maintainer: $DEBFULLNAME <$DEBEMAIL>
+
+EOF
+    grep -v "^\(Version\|Maintainer\|Installed-Size\): .*" $PKG_DIR/debutant/DEBIAN/control 
+) > $PKG_DIR/debian/control 
+
+build_architecture i386
 
 # Squeeze/AMD64 needs a 32bit libmotif:
 if [ "$TARGET_RELEASE" = "squeeze" -a "$ARCH" = "amd64" ]; then
@@ -60,58 +83,33 @@ else
     add_dependency libmotif4
 fi
 
+
+sed -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/usr/share/menu/icaclient > $PKG_DIR/debian/menu
+
 # relocate /opt to /usr/lib - was not required before 12.1
-#mkdir -v $PKG_DIR/usr/lib
-#mv -v $PKG_DIR/opt/Citrix/ICAClient $PKG_DIR/usr/lib
-#rmdir -vp $PKG_DIR/opt/Citrix
-#sed -i -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/DEBIAN/md5sums $PKG_DIR/usr/share/menu/icaclient
-
-debian_install opt/Citrix/ICAClient /usr/lib/ICAClient
-
+debian_install opt/Citrix/ICAClient /usr/lib
+debian_install etc /
 
 # TODO: hook in our ca certs:
 #cp -v /usr/local/share/ca-certificates/*crt \
 #    $PKG_DIR/usr/lib/ICAClient/keystore/cacerts
 
+rm -r $PKG_DIR/opt/Citrix/ICAClient/keystore/cacerts
 
-# redirect config to /etc - no longer required for 12.1
-#mkdir -p $PKG_DIR/etc/icaclient
-#mv $PKG_DIR/usr/lib/ICAClient/config/* $PKG_DIR/etc/icaclient
-#rm -r $PKG_DIR/usr/lib/ICAClient/config
-#ln -s /etc/icaclient $PKG_DIR/usr/lib/ICAClient/config
-#cp $PKG_DIR/usr/lib/ICAClient/nls/en/*.ini $PKG_DIR/etc/icaclient
-#sed  -i -e "s#/usr/lib/ICAClient/\(config/\|nls/en/\)#/etc/icaclient/#;\|/usr/lib/ICAClient/nls/|d" \
-#    $PKG_DIR/DEBIAN/conffiles
+# we need some links for icaclient to work
+cat <<EOF > $PKG_DIR/debian/links
+/etc/icaclient/nls/en     /etc/icaclient/nls/current
+/usr/lib/ICAClient/wfcmgr /usr/bin/wfcmgr
+/etc/ssl/certs            /usr/lib/ICAClient/keystore/cacerts 
+EOF
 
-
-# link the default NLS files to the config dir:
-#( 
-#    ln -vs en  $PKG_DIR/etc/icaclient/nls/current
-#    for INI in $PKG_DIR/etc/icaclient/nls/current/*ini; do
-#        cd $PKG_DIR/usr/lib/ICAClient/config
-#        ln -vs /etc/icaclient/nls/current/`basename $INI` .
-#    done
-#)
-
-#cat <<EOF > $PKG_DIR/debian/links
-#/etc/icaclient/nls/en           /etc/icaclient/nls/current
-#/etc/icaclient/nls/current/*ini /usr/lib/ICAClient/config
-#EOF
-
+# more links ...
+for ini in `ls $PKG_DIR/etc/icaclient/nls/en/*.ini | xargs -n1 basename`; do
+    echo /etc/icaclient/nls/current/${ini} /usr/lib/ICAClient/config/${ini} >> $PKG_DIR/debian/links
+done
 
 # move pkg install scripts out of the way for now:
 disable_install_scripts
-
-# #for script in postinst postrm; do
-#     cat <<-EOF > $PKG_DIR/DEBIAN/$script
-# #!/bin/sh
-
-# set -e
-# #set -x
-
-# EOF
-#     chmod a+rx $PKG_DIR/DEBIAN/$script
-# done
 
 # # install the plugin:
 # case $ARCH in
@@ -139,25 +137,11 @@ disable_install_scripts
 #         ;;
 # esac
 
-# should be performed by dh:
-#for script in postinst postrm; do
-#    for module in menu debconf; do
-#        test -r  /usr/share/debhelper/autoscripts/${script}-${module}  \
-#            && cat /usr/share/debhelper/autoscripts/${script}-${module} >> $PKG_DIR/DEBIAN/$script
-#    done
-#done
 
 #### 
 #
 # finish it up
 #
-
-#d5sums
-
-# Build modifies .deb
-#fakeroot dpkg-deb -b $PKG_DIR
-
-#intian $PKG_DIR.deb
 
 build_package
 
