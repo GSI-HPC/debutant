@@ -53,7 +53,6 @@ cd $PKG_DIR
 debian_control Version      ${VERSION}
 debian_control Architecture ${ARCH}
 
-
 # Squeeze/AMD64 needs a 32bit libmotif:
 if [ "$TARGET_RELEASE" = "squeeze" -a "$ARCH" = "amd64" ]; then
     add_dependency ia32-libmotif4 nspluginwrapper
@@ -114,31 +113,31 @@ disable_install_scripts
 #     chmod a+rx $PKG_DIR/DEBIAN/$script
 # done
 
-# install the plugin:
-case $ARCH in
-    i386)
-        # create a link for the plugin (i386 only)
-        mkdir -p $PKG_DIR/usr/lib/iceweasel/plugins
-        ln -vs /usr/lib/ICAClient/npica.so $PKG_DIR/usr/lib/iceweasel/plugins
-        ;;
-    amd64)
+# # install the plugin:
+# case $ARCH in
+#     i386)
+#         # create a link for the plugin (i386 only)
+#         mkdir -p $PKG_DIR/usr/lib/iceweasel/plugins
+#         ln -vs /usr/lib/ICAClient/npica.so $PKG_DIR/usr/lib/iceweasel/plugins
+#         ;;
+#     amd64)
 
-        if [ "$TARGET_RELEASE" = "squeeze" ]; then
-        # we have to wrap the plugin at install time:
-            cat <<-EOF >> $PKG_DIR/DEBIAN/postinst
-nspluginwrapper -i /usr/lib/ICAClient/npica.so
-EOF
+#         if [ "$TARGET_RELEASE" = "squeeze" ]; then
+#         # we have to wrap the plugin at install time:
+#             cat <<-EOF >> $PKG_DIR/DEBIAN/postinst
+# nspluginwrapper -i /usr/lib/ICAClient/npica.so
+# EOF
         
-        # remove the nspluginwrapper'd plugins
-            cat <<-EOF >> $PKG_DIR/DEBIAN/postrm
-for i in \`nspluginwrapper -l | grep npwrapper.npica\`
-do
-    test -e \$i && nspluginwrapper -r \$i 2>/dev/null
-done
-EOF
-        fi
-        ;;
-esac
+#         # remove the nspluginwrapper'd plugins
+#             cat <<-EOF >> $PKG_DIR/DEBIAN/postrm
+# for i in \`nspluginwrapper -l | grep npwrapper.npica\`
+# do
+#     test -e \$i && nspluginwrapper -r \$i 2>/dev/null
+# done
+# EOF
+#         fi
+#         ;;
+# esac
 
 # should be performed by dh:
 #for script in postinst postrm; do
