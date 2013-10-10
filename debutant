@@ -63,6 +63,9 @@ cleanup() {
     [ -d $BUILD_DIR ] && rm -r $BUILD_DIR
 }
 
+debut_dh_make() {
+    ( cd ${PKG_DIR}; dh_make -y -s --native )
+}
 
 # change an option in debian/control
 debian_control()  {

@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# debianize the mathematica license server
+#
+
+# 1) zipfile must be provided manually 
+
+ARCHIVE=$1
+
+[ $ARCHIVE ] || abort Need an archive to extract megacli
+
+if [ "$2" ]; then
+    ARCH=$2
+else
+    ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+fi
+
+extract $ARCHIVE 
+
+# lets assume there is only one shell script:
+INSTALLER=`find $BUILD_DIR -name '*.sh'`
+
+PACKAGE=mathlm
+VERSION=`basename $INSTALLER | cut -d- -f4`
+
+PKG_DIR=$BUILD_DIR/${PACKAGE}-${VERSION}
+
+# the extract subdir must not exist
+yes e | sh -x $INSTALLER --nox11 --target $PKG_DIR --keep
+
+debut_dh_make
+
+# disable dh_strip (for cross-building):
+debian_rules
+
+build_architecture $ARCH
+
+SOURCE_DIR=Unix/bin/Linux
+
+[ "$ARCH" = "amd64" ] && SOURCE_DIR=Unix/bin/Linux-x86-64
+
+for EXE in monitorlm mathinfo mathlm; do
+    debian_install $SOURCE_DIR/$EXE /usr/sbin
+done
+
+cat <<EOF > $PKG_DIR/debian/manpages
+Unix/man/mathlm.1
+Unix/man/monitorlm.1
+EOF
+
+build_package
+
+drop_result
