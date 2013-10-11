@@ -41,6 +41,12 @@ add_dependency() {
     done
 }
 
+add_init_script() {
+    local init=$1
+    [ "$init" ] || init=$RECIPE_DIR/init
+    cp "$init" $PKG_DIR/debian/init
+}
+
 # sometimes we want to build i386 packages on amd64
 build_architecture() {
     export DEB_HOST_ARCH=$1
@@ -218,15 +224,16 @@ FOUND=
 
 for D in $RECIPE_DIRS; do
     [ -d $D ] || continue
-    if [ -e $D/$RECIPE ]; then
+    if [ -e $D/$RECIPE/recipe ]; then
         FOUND=1
         
         set -e
         [ $DEBUG ] && set -x
-
+        
         # preparations are performed here, not inside recipes
         prepare
-        . `dirname $0`/recipes/$RECIPE $@
+        RECIPE_DIR=`dirname $0`/recipes/$RECIPE
+        . $RECIPE_DIR/recipe $@
         [ $DEBUG ] && set +x
         break
     fi
