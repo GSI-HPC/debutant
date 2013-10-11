@@ -48,6 +48,8 @@ Unix/man/mathlm.1
 Unix/man/monitorlm.1
 EOF
 
+add_init_script 
+
 build_package
 
 drop_result

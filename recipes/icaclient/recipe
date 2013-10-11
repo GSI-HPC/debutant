@@ -52,7 +52,7 @@ dpkg-deb -e $PKG $PKG_DIR/debutant/DEBIAN
 # create package skeleton:
 ( cd ${PKG_DIR}; dh_make -y -s --native )
 
-debian_rules
+#debian_rules
 
 # not all dependencies are resolvable (on Wheezy)
 echo "override_dh_shlibdeps:" >> ${PKG_DIR}/debian/rules

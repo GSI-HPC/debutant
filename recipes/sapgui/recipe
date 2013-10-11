@@ -25,7 +25,7 @@ mkdir ${PKG_DIR}
 cp $INSTALL_JAR $PKG_DIR
 
 # create package skeleton:
-( cd ${PKG_DIR}; dh_make -y -s --native )
+debut_dh_make $PKG_DIR
 
 # this command installs the SAPgui
 INSTALL_CMD="java -jar $INSTALL_JAR  --nogui --verbose --force --nostandard --prefix debian/${PACKAGE} --installdir /usr/share --logfile $BUILD_DIR/install.log"
