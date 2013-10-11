@@ -45,6 +45,8 @@ add_init_script() {
     local init=$1
     [ "$init" ] || init=$RECIPE_DIR/init
     cp "$init" $PKG_DIR/debian/init
+    # modern initscripts make use of lsb functions:
+    #add_dependency "lsb-base (>= 3.2-14)" # versioned depends not supported by add_dependency yet
 }
 
 # sometimes we want to build i386 packages on amd64
