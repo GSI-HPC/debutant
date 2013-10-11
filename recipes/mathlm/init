@@ -15,9 +15,10 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Mathematica license server"
 NAME=mathlm
 DAEMON=/usr/sbin/$NAME
-DAEMON_ARGS="-syslog -timeout $((24*7)) -loglevel 2 -foreground"
+DAEMON_ARGS="-syslog -timeout $((24*7)) -loglevel 2"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
+MATHPASS=/etc/mathlm/mathpass
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -38,6 +39,11 @@ SCRIPTNAME=/etc/init.d/$NAME
 #
 do_start()
 {
+    if [ ! -r "$MATHPASS" ]; then
+	log_daemon_msg "No mathpass file found, not starting mathlm"
+	return 2
+    fi
+    
 	# Return
 	#   0 if daemon has been started
 	#   1 if daemon was already running
@@ -46,7 +52,8 @@ do_start()
 	--exec $DAEMON --test > /dev/null \
 	|| return 1
     start-stop-daemon --start --background --quiet --make-pidfile --chuid  nobody:nogroup \
-	--pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS \
+	--pidfile $PIDFILE --exec $DAEMON \
+	-- $DAEMON_ARGS -pwfile $MATHPASS  -foreground \
 	|| return 2
 	# Add code here, if necessary, that waits for the process to be ready
 	# to handle requests from services started subsequently which depend
