@@ -236,11 +236,14 @@ for D in $RECIPE_DIRS; do
         prepare
         RECIPE_DIR=`dirname $0`/recipes/$RECIPE
         . $RECIPE_DIR/recipe $@
-        [ $DEBUG ] && set +x
+        if [ $DEBUG ]; then
+            set +x
+        else
+            # cleanup:
+            [ -d "$BUILD_DIR" ] && rm -rf "$BUILD_DIR"
+        fi
         break
     fi
 done
 
 [ "$FOUND" ] || abort "No recipe found for '$RECIPE'"
-
-# TODO: cleanup could be performed here, not inside recipes
