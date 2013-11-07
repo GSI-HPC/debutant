@@ -41,12 +41,22 @@ add_dependency() {
     done
 }
 
-add_init_script() {
+add_initscript() {
     local init=$1
     [ "$init" ] || init=$RECIPE_DIR/init
     cp "$init" $PKG_DIR/debian/init
-    # modern initscripts make use of lsb functions:
+    # also copy over the default file if found:
+    [ -e `dirname $init`/default ] && cp `dirname $init`/default $PKG_DIR/debian/default
+    # 'modern' initscripts make use of lsb functions:
     #add_dependency "lsb-base (>= 3.2-14)" # versioned depends not supported by add_dependency yet
+}
+
+add_install_scripts() {
+    for file in preinst postinst prerm postrm; do
+        [ -e $RECIPE_DIR/$file ] || continue
+        cp $RECIPE_DIR/$file $PKG_DIR/debian/
+        chmod a+rx $PKG_DIR/debian/$file
+    done
 }
 
 # sometimes we want to build i386 packages on amd64
@@ -232,10 +242,24 @@ for D in $RECIPE_DIRS; do
         set -e
         [ $DEBUG ] && set -x
         
+        RECIPE_DIR=`dirname $0`/recipes/$RECIPE
+
         # preparations are performed here, not inside recipes
         prepare
-        RECIPE_DIR=`dirname $0`/recipes/$RECIPE
+        # now we have a BUILD_DIR
+        # stage 1: extract and convert the archive
         . $RECIPE_DIR/recipe $@
+        #. $RECIPE_DIR/recipe extract 1$@
+        
+        # now we have a PKG_DIR and put debian/... into it:        
+        #dh_make ... #preseeded with recipe config?
+        #cp -b $RECIPE_DIR/debian/* $PKG_DIR/debian/
+        
+        # stage 2: customize debian files:
+        #. $RECIPE_DIR/recipe package $@
+        
+        # stage 3: we build the package and clean up
+        
         if [ $DEBUG ]; then
             set +x
         else

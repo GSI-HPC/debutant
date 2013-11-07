@@ -48,7 +48,16 @@ Unix/man/mathlm.1
 Unix/man/monitorlm.1
 EOF
 
-add_init_script 
+echo /var/log/mathlm > $PKG_DIR/debian/dirs
+
+add_initscript
+
+# postinst creates a mathlm account:
+add_install_scripts
+add_dependency adduser
+
+debian_control Homepage http://www.wolfram.com/mathematica/
+debian_control Section non-free/education
 
 build_package
 
