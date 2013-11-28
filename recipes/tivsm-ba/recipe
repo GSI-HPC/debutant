@@ -38,6 +38,8 @@ PKG_DIR=$BUILD_DIR/TIVsm-API64-6.4.1
 
 PACKAGE=tivsm-api64
 
+disable_install_scripts
+
 add_debian_files
 debian_control Section non-free/libs
 
@@ -50,6 +52,7 @@ drop_result
 extract $BUILD_DIR/TIVsm-BA.x86_64.rpm
 
 PKG_DIR=$BUILD_DIR/TIVsm-BA-6.4.1
+PACKAGE=tivsm-ba
 
 ## Stage 2
 
@@ -57,7 +60,9 @@ disable_install_scripts
 
 add_debian_files
 
+add_dependency tivsm-api64
 add_dependency "ksh | mksh | pdksh | zsh"
+
 debian_control Section non-free/admin
 build_package
 

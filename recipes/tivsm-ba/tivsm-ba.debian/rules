@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_install:
+	dh_install -Xlibcurl.so
+
+override_dh_shlibdeps:
+	dh_shlibdeps -Xlibvm* -Xlibgvmomi.so -XlibTsmViSdk.so -XlibdiskLibPlugin.so -- --ignore-missing-info

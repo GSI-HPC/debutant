@@ -1,0 +1,14 @@
+#
+# Logfiles are:
+#   dsmerror.log: Error messages
+#   dsmsched.log: Scheduler log
+#   dsmwebcl.log: Web client (dsmcad) log
+
+/var/log/tsm/*.log {
+   weekly
+   compress
+   delaycompress
+   missingok
+}
+
+

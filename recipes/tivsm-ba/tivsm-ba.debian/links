@@ -1,0 +1,20 @@
+etc/tsm/dsm.sys		usr/lib/tsm-ba/dsm.sys
+etc/tsm/dsm.opt 	usr/lib/tsm-ba/dsm.opt
+
+usr/bin/dsmc 	usr/bin/dsmadmc
+usr/bin/dsmc 	usr/bin/dsmadmc
+usr/bin/dsmc 	usr/bin/dsmagent
+usr/bin/dsmc 	usr/bin/dsmcad
+usr/bin/dsmc 	usr/bin/dsmswitch
+usr/bin/dsmc 	usr/bin/dsmtca
+usr/bin/dsmc 	usr/bin/dsmtrace
+usr/bin/dsmc 	usr/bin/tsmc
+usr/bin/dsmj	usr/bin/dsm
+usr/bin/dsmj 	usr/bin/tsm
+
+usr/lib/tsm-ba/dsmc		usr/lib/tsm-ba/tsmc
+
+usr/lib/tsm-ba/libxerces-c1_6_0.so		usr/lib/libtsm530xerces-c1_6_0.so 
+usr/lib/tsm-ba/libxmlutil-5.3.2.0.so	usr/lib/libxmlutil-5.3.2.0.so 
+
+usr/share/tsm-api/lang/EN_US 	usr/lib/tsm-ba/EN_US

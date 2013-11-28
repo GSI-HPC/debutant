@@ -1,0 +1,11 @@
+exclude /.../*.lmd
+exclude /.../.xsession-errors
+exclude /.../core
+exclude /.../*.so
+exclude /.../*.o
+exclude /.../.netscape/cache/.../*
+exclude /.../.kde/share/apps/kio_http/cache/.../*
+exclude /.../.kde/share/cache/.../*
+exclude /.../.lsbatch/.../*
+exclude /.../.mozilla/.../Cache/.../*
+exclude /.../.nfs*

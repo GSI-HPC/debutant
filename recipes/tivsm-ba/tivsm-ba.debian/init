@@ -1,0 +1,94 @@
+#! /bin/sh
+#
+# Author: Christopher Huhn <c.huhn@gsi.de>
+#
+# script for starting  the tsm scheduler during boot
+#
+### BEGIN INIT INFO
+# Provides:          tsm-ba
+# Required-Start:    $remote_fs 
+# Required-Stop:     $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: start the TSM client scheduler
+# Description:       For server-triggered backups the dsmc client
+#                    must be started in scheduler mode and daemonized
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DSMC=/usr/lib/tsm-ba/dsmc
+NAME=$(basename $DSMC)
+DESC="TSM scheduler"
+
+# define default location if not specified elsewhere
+[ $DSM_CONFIG ] || export DSM_CONFIG=/etc/tsm/dsm.opt
+
+DSM_DIR=/usr/lib/tsm-ba/
+DSM_LOG=/var/log/tsm/
+# LC_ALL must be set to en_US to backup filenames with non-ASCII characters ?!
+LC_ALL=en_US
+export DSM_DIR DSM_LOG LC_ALL
+
+test -x $DSMC || exit 0
+
+set -e
+
+case "$1" in
+    
+    start)
+	echo -n "Starting $DESC: $NAME "
+	        # tsmc neither forks to background nor creates a pidfile by itself:
+	start-stop-daemon --start --background \
+	    --make-pidfile --pidfile /var/run/$NAME.pid \
+	    --exec $DSMC -- schedule
+	echo "."
+	;;
+    
+    stop)
+	echo -n "Stopping $DESC: $NAME "
+	start-stop-daemon --stop --pidfile /var/run/$NAME.pid \
+	    --signal 9 --exec $DSMC \
+	    && rm /var/run/$NAME.pid
+	echo "."
+	;;
+    
+    #reload)
+	# 
+	# If the daemon can reload its config files on the fly
+	# for example by sending it SIGHUP, do it here.
+        #;;
+    
+    restart|force-reload)
+	    #
+     	#	If the "reload" option is implemented, move the "force-reload"
+	    #	option to the "reload" entry above. If not, "force-reload" is
+	    #	just the same as "restart".
+	    # 
+	echo -n "Restarting $DESC: "
+	start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
+	    --exec $DSMC || true	
+	echo -n "$NAME"
+	sleep 1
+	start-stop-daemon --start --quiet --background \
+	    --make-pidfile --pidfile /var/run/$NAME.pid \
+	    --exec $DSMC -- schedule
+	echo "."
+	;;
+    
+    status)
+	if [ -r /var/run/$NAME.pid ] && [ -d /proc/$(cat /var/run/dsmc.pid) ]; then
+	    $DSMC query schedule
+	else
+	    echo "$DESC is not running" >&2
+        fi
+	;;
+    
+    *)
+	N=/etc/init.d/$NAME
+	    # echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $N {start|stop|restart|force-reload|status}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

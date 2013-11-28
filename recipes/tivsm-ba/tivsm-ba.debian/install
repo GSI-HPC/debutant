@@ -1,0 +1,5 @@
+debian/dsmc usr/bin
+debian/dsmj usr/bin
+debian/inclexcl 				     etc/tsm/
+opt/tivoli/tsm/client/ba/bin/*.so.*  usr/lib
+opt/tivoli/tsm/client/ba/bin/*	     usr/lib/tsm/ba/bin
