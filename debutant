@@ -35,7 +35,7 @@ add_dependency() {
         shift
     fi
 
-    for PKG in $@; do
+    for PKG in "$@"; do
         grep -q "^${depends}: .*\<$PKG\>" $PKG_DIR/debian/control \
             || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $PKG_DIR/debian/control
     done
@@ -225,7 +225,7 @@ fetch() {
 prepare() {
     # some preparations:
     ME=`whoami`
-    [ "$DEBEMAIL" ] || DEBEMAIL="$ME@"`hostname -f`
+    [ "$DEBEMAIL" ]    || DEBEMAIL="$ME@"`hostname -f`
     [ "$DEBFULLNAME" ] || DEBFULLNAME=`getent passwd $ME | cut -f 5 -d : | cut -f 1 -d,`
     
     BUILD_DIR=`mktemp -d -p .`
@@ -262,6 +262,7 @@ for D in $RECIPE_DIRS; do
 
         # preparations are performed here, not inside recipes
         prepare
+
         # now we have a BUILD_DIR
         # stage 1: extract and convert the archive
         . $RECIPE_DIR/recipe $@
