@@ -1,0 +1,50 @@
+#!/bin/sh
+
+set -e
+
+### Check the parameters ###
+
+OPTIONS=
+
+if [ "$1" ]; then 
+    
+    # ------------ Go to the passed directory ---------------------
+    # ------------ Parse command line arguments -------------------
+    for arg
+      do
+      case $arg in
+	  -*) 
+	      OPTIONS="$OPTIONS$arg "
+	      ;;
+	  *) 
+	      echo "Error: $arg is not an option"
+	      exit 1
+	      ;;
+      esac
+    done
+fi
+
+# define default location if not specified elsewhere
+[ "$DSM_CONFIG" ] || export DSM_CONFIG=/etc/tsm/dsm.opt
+
+if [ -z "$DSM_LOG" ]; then
+	if [ "`id -u`" -eq 0 ]; then
+		DSM_LOG=/var/log/tsm/
+    else
+		DSM_LOG=$HOME/.tsm
+    fi
+	export DSM_LOG	
+fi
+
+export DSM_DIR=/usr/lib/tsm-ba/
+
+### Start the JavaGUI Application ###
+
+java -DDSM_LANG="$LANG" \
+    -DDSM_CONFIG="$DSM_CONFIG" \
+    -DDSM_DIR="$DSM_DIR" \
+    -DDSM_LOG="$DSM_LOG" \
+    -DDSM_ROOT="$DSM_DIR" \
+    -DDSM_OPTIONS="$OPTIONS" \
+    -jar /usr/lib/tsm-ba/dsm.jar
+

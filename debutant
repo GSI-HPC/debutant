@@ -59,6 +59,18 @@ add_install_scripts() {
     done
 }
 
+
+#
+# load prepared packaging files
+#
+add_debian_files() {
+    if [ "$PACKAGE" -a -d $RECIPE_DIR/$PACKAGE.debian ]; then
+        cp -b $RECIPE_DIR/$PACKAGE.debian/* $PKG_DIR/debian
+    else
+        cp -b $RECIPE_DIR/debian/* $PKG_DIR/debian
+    fi
+}
+
 # sometimes we want to build i386 packages on amd64
 build_architecture() {
     export DEB_HOST_ARCH=$1
@@ -154,7 +166,11 @@ extract() {
     local blob="$1"
     local dir=$2
     local mime=`file --brief --mime-type "$blob"`
-
+        
+    if [ ! -r $blob ]; then
+        [ -r $BUILD_DIR/$blob ] && blob=$BUILD_DIR/$blob
+    fi
+    
     [ "$dir" ] || dir=$BUILD_DIR
 
     case $mime in

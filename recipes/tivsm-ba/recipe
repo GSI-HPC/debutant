@@ -1,0 +1,64 @@
+# -*- sh -*-
+
+ARCHIVE=$1
+
+if [ -z $ARCHIVE ]; then
+   ARCHIVE=`fetch ftp://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v6r4/Linux/LinuxX86/BA/v641/6.4.1.0-TIV-TSMBAC-LinuxX86.tar`
+fi
+
+tar -xvf $ARCHIVE -C $BUILD_DIR
+
+### gskcrypt64
+
+extract $BUILD_DIR/gskcrypt64-8.0.14.26.linux.x86_64.rpm
+PKG_DIR=$BUILD_DIR/gskcrypt64-8.0
+PACKAGE=gskcrypt64
+disable_install_scripts
+add_debian_files
+debian_control Section non-free/libs
+build_package
+drop_result
+
+### gskssl64
+
+extract $BUILD_DIR/gskssl64-8.0.14.26.linux.x86_64.rpm
+PKG_DIR=$BUILD_DIR/gskssl64-8.0
+PACKAGE=gskssl64
+disable_install_scripts
+add_debian_files
+debian_control Section non-free/libs
+build_package
+drop_result
+
+### TSM API
+
+extract $BUILD_DIR/TIVsm-API64.x86_64.rpm
+
+PKG_DIR=$BUILD_DIR/TIVsm-API64-6.4.1
+
+PACKAGE=tivsm-api64
+
+add_debian_files
+debian_control Section non-free/libs
+
+build_package
+
+drop_result
+
+### TSM BA
+
+extract $BUILD_DIR/TIVsm-BA.x86_64.rpm
+
+PKG_DIR=$BUILD_DIR/TIVsm-BA-6.4.1
+
+## Stage 2
+
+disable_install_scripts
+
+add_debian_files
+
+add_dependency "ksh | mksh | pdksh | zsh"
+debian_control Section non-free/admin
+build_package
+
+drop_result

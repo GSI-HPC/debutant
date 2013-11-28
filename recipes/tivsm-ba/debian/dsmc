@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#
+# wrapper script for tsm-ba
+# 
+# this script may be called as dsm, tsm, dsmc or tsmc
+#
+
+# define default location if not specified elsewhere
+[ "$DSM_CONFIG" ] || export DSM_CONFIG=/etc/tsm/dsm.opt
+
+if [ -z "$DSM_LOG" ]; then
+	if [ "`id -u`" -eq 0 ]; then
+		DSM_LOG=/var/log/tsm/
+	else
+		DSM_LOG=$HOME/.tsm
+	fi
+	export DSM_LOG
+fi
+
+export DSM_DIR=/usr/lib/tsm-ba/
+
+# turn off wildcard expansion:
+set -f
+
+exec /usr/lib/tsm-ba/$(basename $0) $@
