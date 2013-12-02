@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+GROUP=tsm
+
+if [ "$1" = configure ]; then
+    if [ -z `getent group $GROUP` ]; then
+        addgroup --system --quiet $GROUP
+    fi
+    
+    chown $GROUP /usr/lib/tsm/ba/bin/dsmtca
+    chmod 4754   /usr/lib/tsm/ba/bin/dsmtca
+fi
+
+#DEBHELPER#

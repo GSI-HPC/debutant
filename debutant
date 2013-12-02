@@ -100,7 +100,7 @@ debut_dh_make() {
 # change an option in debian/control
 debian_control()  {
     local key=$1
-    local value=$2
+    local value="$2"
     sed -i -e "s|^\($key:\) .*|\1 $value|" ${PKG_DIR}/debian/control    
 }
 

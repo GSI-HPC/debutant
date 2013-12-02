@@ -1,0 +1,19 @@
+# Defaults for tivsm-ba initscript
+# sourced by /etc/init.d/tivsm-ba
+# installed at /etc/default/tivsm-ba by the maintainer scripts
+
+# Enable init script (yes|no)
+ENABLED=no
+
+# Additional options that are passed to the Daemon.
+DAEMON_OPTS=""
+
+# Set environment for the daemon
+LD_LIBRARY_PATH=/usr/lib/tivsm-ba:/usr/lib/tivsm-api64:$LD_LIBRARY_PATH
+DSM_DIR=/usr/lib/tivsm-ba
+DSM_CONFIG=/etc/tivsm-ba/dsm.opt
+DSM_LOG=/var/log/tivsm-ba
+
+# To use different languages, install another tivsm-msg.LANG package and change the LANG variable here
+LANG=EN_US
+NLSPATH=/usr/share/tivsm-msg/$LANG/dsmclientV3.cat:$NLSPATH

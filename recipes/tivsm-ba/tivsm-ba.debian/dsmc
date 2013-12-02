@@ -18,9 +18,9 @@ if [ -z "$DSM_LOG" ]; then
 	export DSM_LOG
 fi
 
-export DSM_DIR=/usr/lib/tsm-ba/
+export DSM_DIR=/usr/lib/tsm/ba/bin
 
 # turn off wildcard expansion:
 set -f
 
-exec /usr/lib/tsm-ba/$(basename $0) $@
+exec /usr/lib/tsm/ba/bin/$(basename $0) $@

@@ -41,7 +41,7 @@ PACKAGE=tivsm-api64
 disable_install_scripts
 
 add_debian_files
-debian_control Section non-free/libs
+debian_control Maintainer "$DEBFULLNAME <$DEBEMAIL>"
 
 build_package
 

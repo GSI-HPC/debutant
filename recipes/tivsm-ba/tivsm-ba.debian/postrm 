@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+GROUP=tsm
+
+#DEBHELPER#
+
+if [ "$1" = "purge" ]; then
+    delgroup --quiet $GROUP || true
+fi
