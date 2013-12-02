@@ -1,0 +1,17 @@
+Source: tivsm-api64
+Section: non-free/libs
+Priority: extra
+
+Package: tivsm-api
+Architecture: amd64
+Depends: ${shlibs:Depends}
+Description: IBM Tivoli Storage Manager API
+ .
+ Debianized by debutant
+
+Package: tsm-api-dev
+Architecture: all
+Depends: tivsm-api 
+Description: Tivoli Storage Manager API header files and samples
+ .
+ Debianized by debutant
