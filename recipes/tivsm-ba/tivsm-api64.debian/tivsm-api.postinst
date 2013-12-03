@@ -2,8 +2,10 @@
 
 set -e
 
+ldconfig
+
 GROUP=tsm
-DSMTCA=/usr/lib/tsm/ba/bin/dsmtca
+DSMTCA=/usr/lib/tsm/api/bin/dsmtca
 LOGDIR=/var/log/tsm
 
 if [ "$1" = configure ]; then
@@ -19,3 +21,4 @@ if [ "$1" = configure ]; then
 fi
 
 #DEBHELPER#
+

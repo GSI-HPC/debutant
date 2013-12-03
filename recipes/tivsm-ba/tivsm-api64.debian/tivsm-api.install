@@ -1,3 +1,4 @@
-opt/tivoli/tsm/client/api/bin64/dsmtca 	usr/sbin
+opt/tivoli/tsm/client/api/bin64/dsmtca 	usr/lib/tsm/api/bin
 opt/tivoli/tsm/client/api/bin64/lib*so 	usr/lib
+opt/tivoli/tsm/client/lang/EN_US/dsmclientV3.cat  usr/share/locale/en/
 opt/tivoli/tsm/client/lang              usr/share/tsm

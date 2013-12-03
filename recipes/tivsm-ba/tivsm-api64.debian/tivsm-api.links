@@ -1,0 +1,3 @@
+etc/tsm/dsm.sys		                 usr/lib/tsm/api/bin/dsm.sys
+etc/tsm/dsm.opt 	                 usr/lib/tsm/api/bin/dsm.opt
+usr/share/locale/en/dsmclientV3.cat  usr/lib/tsm/api/EN_US/dsmclientV3.cat
