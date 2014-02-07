@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -86,7 +86,14 @@ build_depends() {
 }
 
 build_package() {
-    ( cd $PKG_DIR; debuild -b -us -uc -a${DEB_HOST_ARCH})
+    ( 
+        cd $PKG_DIR
+        if [ "$1" != "--keep-revision" ]; then
+            local version=$(head -1 debian/changelog | sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
+            debchange -v ${version//-*/-$REVISION} "Build by debutant"
+        fi
+        debuild -b -us -uc -a${DEB_HOST_ARCH}
+    )
 }
 
 cleanup() {
@@ -244,6 +251,22 @@ export abort add_dependency cleanup debian_control debian_rules \
 RECIPE_DIRS="`dirname $0`/recipes /usr/lib/debutant/recipes"
 
 # ... /usr/local/lib/debutant/recipes??, /var/lib/debutant/recipes???
+REVISION=1
+
+while getopts "r:d" OPTION; do
+    case $OPTION in
+        r)
+            REVISION=$OPTARG           
+            ;;
+        d)
+            DEBUG=1
+            ;;
+        *)
+            ;;
+    esac
+done
+
+shift $(($OPTIND - 1))
 
 RECIPE=$1
 shift
