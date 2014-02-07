@@ -16,7 +16,8 @@ PACKAGE=gskcrypt64
 disable_install_scripts
 add_debian_files
 debian_control Section non-free/libs
-build_package
+# package version is something like 8.0-15.26
+build_package --keep-revision
 drop_result
 
 ### gskssl64
@@ -27,7 +28,8 @@ PACKAGE=gskssl64
 disable_install_scripts
 add_debian_files
 debian_control Section non-free/libs
-build_package
+# see above
+build_package --keep-revision
 drop_result
 
 ### TSM API
