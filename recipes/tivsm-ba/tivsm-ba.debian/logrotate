@@ -9,6 +9,6 @@
    compress
    delaycompress
    missingok
+   su root tsm
+   notifempty
 }
-
-
