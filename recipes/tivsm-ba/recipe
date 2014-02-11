@@ -63,6 +63,8 @@ disable_install_scripts
 add_debian_files
 
 add_dependency tivsm-api
+
+# needs ksh compatible interpreter:
 add_dependency "ksh | mksh | pdksh | zsh"
 
 debian_control Section non-free/admin
