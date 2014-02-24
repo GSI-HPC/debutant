@@ -65,9 +65,9 @@ add_install_scripts() {
 #
 add_debian_files() {
     if [ "$PACKAGE" -a -d $RECIPE_DIR/$PACKAGE.debian ]; then
-        cp -b $RECIPE_DIR/$PACKAGE.debian/* $PKG_DIR/debian
+        cp -br $RECIPE_DIR/$PACKAGE.debian/. $PKG_DIR/debian
     else
-        cp -b $RECIPE_DIR/debian/* $PKG_DIR/debian
+        cp -br $RECIPE_DIR/debian/. $PKG_DIR/debian
     fi
 }
 

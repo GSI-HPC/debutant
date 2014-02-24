@@ -1,0 +1,35 @@
+# -*- sh -*-
+#
+# Tool for flashing IPMI firmware from the command line
+#
+#
+
+
+ARCHIVE=$1
+
+if [ -z $ARCHIVE ]; then
+   ARCHIVE=`fetch ftp://ftp.supermicro.com/utility/IPMI%20FW%20flash%20tools/SMT/IPMI%20Flash%20Utility%20and%20instruction.zip`
+fi
+
+extract "$ARCHIVE"
+
+VERSION=`find $BUILD_DIR -name Linux* -type d | sed -e s/.*Linux//`
+
+PKG_DIR=$BUILD_DIR/$RECIPE-$VERSION
+
+mv $BUILD_DIR/"IPMI Flash Utility and instruction" $PKG_DIR
+
+debut_dh_make
+
+#add_debian_files
+
+build_architecture i386
+# must disable dh_strip:
+debian_rules
+
+debian_install "Linux$VERSION/lUpdate /usr/sbin"
+debian_install "Linux$VERSION/kcs.cfg /usr/share/$RECIPE"
+
+build_package
+
+drop_result
