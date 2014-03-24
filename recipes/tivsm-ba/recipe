@@ -68,6 +68,7 @@ add_dependency tivsm-api
 add_dependency "ksh | mksh | pdksh | zsh"
 
 debian_control Section non-free/admin
+debian_control Replaces tsm-ba
 build_package
 
 drop_result

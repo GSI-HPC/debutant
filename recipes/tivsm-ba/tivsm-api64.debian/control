@@ -6,7 +6,7 @@ Maintainer: Somebody <blafasel@example.com>
 Package: tivsm-api
 Architecture: amd64
 Depends: ${shlibs:Depends}, gskcrypt64, gskssl64
-Replaces: tivsm-api64
+Replaces: tivsm-api64, tsm-api
 Description: IBM Tivoli Storage Manager API
  .
  Debianized by debutant
