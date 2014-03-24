@@ -5,27 +5,32 @@
 # $Id: ica_repack 18509 2012-10-30 17:38:31Z christo $
 # 
 
-REVISION=1
-TARGET_RELEASE=`lsb_release -cs`
-ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
+#REVISION=1
+# TARGET_RELEASE=`lsb_release -cs`
+# ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
 
-while getopts "v:t:a:" OPTION; do
-    case $OPTION in 
-        a)
-            ARCH=$OPTARG
-            ;;
-        t)
-            TARGET_RELEASE=$OPTARG
-            ;;
-        v)
-            REVISION=$(($OPTARG))
-            ;;
-    esac
-done
+# while getopts "v:t:a:" OPTION; do
+#     case $OPTION in 
+#         a)
+#             ARCH=$OPTARG
+#             ;;
+#         t)
+#             TARGET_RELEASE=$OPTARG
+#             ;;
+#     esac
+# done
 
-shift $(($OPTIND - 1))
+# shift $(($OPTIND - 1))
+
 
 PKG=$1
+
+# Does not work, needs manual download
+#if [ -z $PKG ]; then
+#    PKG=`fetch https://downloads.citrix.com/akdlm/8618/icaclient_13.0.0.256735_amd64.deb`
+#fi
+
+#extract "$ARCHIVE"
 
 [ $PKG ] || abort Need an archive to extract icaclient
 
@@ -40,22 +45,15 @@ fi
 
 PKG_DIR="$BUILD_DIR/${PKG_NAME}-${VERSION}"
 
-mkdir $PKG_DIR
-
-# extract normal package contents
-dpkg-deb -x $PKG $PKG_DIR
-
-# extract debian metadata to DEBIAN subdir
-mkdir -p $PKG_DIR/debutant/DEBIAN
-dpkg-deb -e $PKG $PKG_DIR/debutant/DEBIAN
+extract $PKG $PKG_DIR
 
 # create package skeleton:
-( cd ${PKG_DIR}; dh_make -y -s --native )
+debut_dh_make
 
-#debian_rules
+add_debian_files
 
 # not all dependencies are resolvable (on Wheezy)
-echo "override_dh_shlibdeps:" >> ${PKG_DIR}/debian/rules
+#echo "override_dh_shlibdeps:" >> ${PKG_DIR}/debian/rules
 
 # keep the original copyright
 cp $PKG_DIR/usr/share/doc/icaclient/copyright         $PKG_DIR/debian/
@@ -71,10 +69,10 @@ Build-depends: ia32-libs-gtk, libmotif4, libspeex1
 Maintainer: $DEBFULLNAME <$DEBEMAIL>
 
 EOF
-    grep -v "^\(Version\|Maintainer\|Installed-Size\): .*" $PKG_DIR/debutant/DEBIAN/control 
+    grep -v "^\(Version\|Maintainer\|Installed-Size\): .*" $PKG_DIR/DEBIAN/control 
 ) > $PKG_DIR/debian/control 
 
-build_architecture i386
+#build_architecture i386
 
 # Squeeze/AMD64 needs a 32bit libmotif:
 if [ "$TARGET_RELEASE" = "squeeze" -a "$ARCH" = "amd64" ]; then
@@ -83,12 +81,9 @@ else
     add_dependency libmotif4
 fi
 
-
+# Fix paths
 sed -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/usr/share/menu/icaclient > $PKG_DIR/debian/menu
-
-# relocate /opt to /usr/lib - was not required before 12.1
-debian_install opt/Citrix/ICAClient /usr/lib
-debian_install etc /
+sed -i -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/usr/share/applications/*desktop
 
 # TODO: hook in our ca certs:
 #cp -v /usr/local/share/ca-certificates/*crt \
@@ -100,7 +95,7 @@ rm -r $PKG_DIR/opt/Citrix/ICAClient/keystore/cacerts
 cat <<EOF > $PKG_DIR/debian/links
 /etc/icaclient/nls/en     /etc/icaclient/nls/current
 /usr/lib/ICAClient/wfcmgr /usr/bin/wfcmgr
-/etc/ssl/certs            /usr/lib/ICAClient/keystore/cacerts 
+/etc/ssl/certs            /usr/lib/ICAClient/keystore/cacerts
 EOF
 
 # more links ...
@@ -109,7 +104,7 @@ for ini in `ls $PKG_DIR/etc/icaclient/nls/en/*.ini | xargs -n1 basename`; do
 done
 
 # move pkg install scripts out of the way for now:
-disable_install_scripts
+#disable_install_scripts
 
 # # install the plugin:
 # case $ARCH in
