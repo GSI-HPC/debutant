@@ -1,0 +1,7 @@
+# Defaults for tivsm-ba initscript
+# sourced by /etc/init.d/tivsm-ba
+# installed at /etc/default/tivsm-ba by the maintainer scripts
+
+# $LANG must be set to make backup of files with non-ascii characters in their name
+#  not sure if C is sufficient or if $LANG must be en_US or if we even have to set $LC_ALL
+LANG=C
