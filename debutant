@@ -66,7 +66,7 @@ add_install_scripts() {
 add_debian_files() {
     if [ "$PACKAGE" -a -d $RECIPE_DIR/$PACKAGE.debian ]; then
         cp -br $RECIPE_DIR/$PACKAGE.debian/. $PKG_DIR/debian
-    else
+    elif [ -d $RECIPE_DIR/debian ]; then
         cp -br $RECIPE_DIR/debian/. $PKG_DIR/debian
     fi
 }
@@ -102,6 +102,8 @@ cleanup() {
 
 debut_dh_make() {
     ( cd ${PKG_DIR}; dh_make -y -s --native )
+    # modify rules file to override dh_strip
+    debian_rules
 }
 
 # change an option in debian/control
@@ -179,6 +181,8 @@ extract() {
     fi
     
     [ "$dir" ] || dir=$BUILD_DIR
+    
+    [ -d "$dir" ] || mkdir -p "$dir"
 
     case $mime in
 
@@ -208,9 +212,16 @@ extract() {
                 fakeroot alien -dsg --scripts --verbose "$archive"
             )
             ;;
-        
+
+        # Debian package: extract with dpkg-deb; metadata goes to DEBIAN/
+        application/x-debian-package)
+            dpkg-deb -x $blob $dir         # normal package content
+            mkdir -p $dir/DEBIAN    
+            dpkg-deb -e $blob $dir/DEBIAN  # debian metadata
+            ;;
+
         *)
-            abort "Unknown archive type $mine for $blob"
+            abort "Unknown archive type $mine for $blob: $mime"
             ;;
     esac
 }
