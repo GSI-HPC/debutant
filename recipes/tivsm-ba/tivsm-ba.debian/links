@@ -1,5 +1,6 @@
-etc/tsm/dsm.sys		usr/lib/tsm/ba/bin/dsm.sys
-etc/tsm/dsm.opt 	usr/lib/tsm/ba/bin/dsm.opt
+etc/tsm/dsm.sys		  usr/lib/tsm/ba/bin/dsm.sys
+etc/tsm/dsm.opt 	  usr/lib/tsm/ba/bin/dsm.opt
+etc/tsm/tsmstats.ini  usr/lib/tsm/ba/bin/tsmstats.ini
 
 usr/bin/dsmc 	usr/bin/dsmadmc
 usr/bin/dsmc 	usr/bin/dsmadmc
@@ -10,4 +11,5 @@ usr/bin/dsmc 	usr/bin/dsmtca
 usr/bin/dsmc 	usr/bin/dsmtrace
 usr/bin/dsmj	usr/bin/dsm
 
-usr/share/tsm/lang/EN_US 	usr/lib/tsm/ba/bin/EN_US
+usr/share/tsm/lang/EN_US  usr/lib/tsm/ba/bin/EN_US
+usr/lib/tsm/ba/bin        opt/tivoli/tsm/client/ba/bin

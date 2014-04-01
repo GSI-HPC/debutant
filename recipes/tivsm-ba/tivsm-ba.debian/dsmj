@@ -36,7 +36,7 @@ if [ -z "$DSM_LOG" ]; then
 	export DSM_LOG	
 fi
 
-export DSM_DIR=/usr/lib/tsm-ba/
+export DSM_DIR=/usr/lib/tsm/ba/bin
 
 ### Start the JavaGUI Application ###
 
@@ -46,5 +46,4 @@ java -DDSM_LANG="$LANG" \
     -DDSM_LOG="$DSM_LOG" \
     -DDSM_ROOT="$DSM_DIR" \
     -DDSM_OPTIONS="$OPTIONS" \
-    -jar /usr/share/tsm/dsm.jar
-
+    -jar ${DSM_DIR}/dsm.jar

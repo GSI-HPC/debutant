@@ -1,3 +1,4 @@
 etc/tsm/dsm.sys		                 usr/lib/tsm/api/bin/dsm.sys
 etc/tsm/dsm.opt 	                 usr/lib/tsm/api/bin/dsm.opt
+usr/lib/libxerces-c1_6_0.so          usr/lib/libtsm641xerces-c1_6_0.so
 usr/share/locale/en/dsmclientV3.cat  usr/lib/tsm/api/EN_US/dsmclientV3.cat
