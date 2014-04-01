@@ -61,42 +61,46 @@ cp $PKG_DIR/usr/share/doc/icaclient/copyright         $PKG_DIR/debian/
 # append the original changelog:
 zcat $PKG_DIR/usr/share/doc/icaclient/changelog.gz >> $PKG_DIR/debian/changelog
 
+
 # modify the extracted debian/control:
 ( 
+    #Build-depends: ia32-libs-gtk, libmotif4:i386, libspeex1, 
     cat <<EOF 
 Source: icaclient
-Build-depends: ia32-libs-gtk, libmotif4, libspeex1
+Build-depends: libgstreamer0.10-0:i386, libxerces-c3.1:i386
 Maintainer: $DEBFULLNAME <$DEBEMAIL>
 
 EOF
     grep -v "^\(Version\|Maintainer\|Installed-Size\): .*" $PKG_DIR/DEBIAN/control 
 ) > $PKG_DIR/debian/control 
 
-#build_architecture i386
+# remove dependencies:
+sed -i -e "s/^\(Depends:\).*/\1/" $PKG_DIR/debian/control
 
 # Squeeze/AMD64 needs a 32bit libmotif:
 if [ "$TARGET_RELEASE" = "squeeze" -a "$ARCH" = "amd64" ]; then
     add_dependency ia32-libmotif4 nspluginwrapper
 else
     add_dependency libmotif4
+    build_architecture i386
 fi
 
 # Fix paths
 sed -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/usr/share/menu/icaclient > $PKG_DIR/debian/menu
-sed -i -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/usr/share/applications/*desktop
 
-# TODO: hook in our ca certs:
-#cp -v /usr/local/share/ca-certificates/*crt \
-#    $PKG_DIR/usr/lib/ICAClient/keystore/cacerts
+if [ -d $PKG_DIR/usr/share/applications/ ]; then
+    # only for 13.0
+    sed -i -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/usr/share/applications/*desktop
+    echo "usr/share/applications/" >>  $PKG_DIR/debian/install
+fi
 
+# wfcmgr vanished in 13.0:
+if [ -e $PKG_DIR/opt/Citrix/ICAClient/wfcmgr ]; then
+    echo "/usr/lib/ICAClient/wfcmgr /usr/bin/wfcmgr" >> $PKG_DIR/debian/links
+fi
+
+# this will be linked to /etc/ssl/certs/:
 rm -r $PKG_DIR/opt/Citrix/ICAClient/keystore/cacerts
-
-# we need some links for icaclient to work
-cat <<EOF > $PKG_DIR/debian/links
-/etc/icaclient/nls/en     /etc/icaclient/nls/current
-/usr/lib/ICAClient/wfcmgr /usr/bin/wfcmgr
-/etc/ssl/certs            /usr/lib/ICAClient/keystore/cacerts
-EOF
 
 # more links ...
 for ini in `ls $PKG_DIR/etc/icaclient/nls/en/*.ini | xargs -n1 basename`; do

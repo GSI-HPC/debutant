@@ -1,0 +1,3 @@
+/etc/icaclient/nls/en     /etc/icaclient/nls/current
+/etc/ssl/certs            /usr/lib/ICAClient/keystore/cacerts
+/usr/lib/ICAClient/wfcmgr /usr/bin/wfcmgr
