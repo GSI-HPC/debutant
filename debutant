@@ -214,12 +214,19 @@ extract() {
             ;;
 
         # Debian package: extract with dpkg-deb; metadata goes to DEBIAN/
-        application/x-debian-package)
-            dpkg-deb -x $blob $dir         # normal package content
-            mkdir -p $dir/DEBIAN    
-            dpkg-deb -e $blob $dir/DEBIAN  # debian metadata
+        application/x-debian-package|application/octet-stream)
+            
+            # on Squeeze debs are application/octet-stream
+            if expr $blob : '.*\.deb' > /dev/null; then
+                
+                dpkg-deb -x $blob $dir         # normal package content
+                mkdir -p $dir/DEBIAN    
+                dpkg-deb -e $blob $dir/DEBIAN  # debian metadata
+            else
+                abort "Unknown archive type $mine for $blob: $mime"
+            fi
             ;;
-
+        
         *)
             abort "Unknown archive type $mine for $blob: $mime"
             ;;
