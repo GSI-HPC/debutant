@@ -101,7 +101,7 @@ cleanup() {
 }
 
 debut_dh_make() {
-    ( cd ${PKG_DIR}; dh_make -y -s --native )
+    ( cd ${PKG_DIR}; echo | dh_make -s --native )
     # modify rules file to override dh_strip
     debian_rules
 }
