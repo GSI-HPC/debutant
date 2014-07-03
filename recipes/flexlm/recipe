@@ -1,0 +1,66 @@
+# -*- sh -*-
+#
+# recipe for building flexlm
+#
+
+# download announced to be discontinued on 2014/07/31
+
+HOMEPAGE=http://www.globes.com/support/fnp_utilities_download.htm
+#VERSION=11.12.1.0_v6
+
+# if [ "$1" ]; then
+#     ARCH=$1
+# else
+#     ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+# fi
+
+# case $ARCH in 
+#     i386 )
+#         URL="http://www.globes.com/products/utilities/v${VERSION}/lmgrd-i86_lsb-${VERSION}.tar.gz"
+#         ;;
+#     amd64)
+#         URL="http://www.globes.com/products/utilities/v${VERSION}/lmgrd-x64_lsb-${VERSION}.tar.gz"
+#         ;;
+# esac
+
+# wget $URL -P $BUILD_DIR
+
+ARCHIVE=$1
+
+if [ ${ARCHIVE%-*} = 'lmgrd-i86_lsb' ]; then
+    ARCH=i386
+elif [ ${ARCHIVE%-*} = 'lmgrd-x64_lsb' ]; then
+    ARCH=amd64
+else
+    ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+fi
+
+VERSION=${ARCHIVE##*-}
+VERSION=${VERSION%_*}
+
+PKG_DIR=$BUILD_DIR/lmgrd-$VERSION
+
+mkdir -p $PKG_DIR
+
+extract $ARCHIVE $PKG_DIR
+
+###
+
+debut_dh_make
+
+debian_control Homepage $HOMEPAGE
+
+add_debian_files
+
+###
+
+build_architecture $ARCH
+
+build_package
+
+drop_result
+
+### lmutil:
+
+# wget http://www.globes.com/products/utilities/v11.12.1/lmutil-i86_lsb-11.12.1.0v6.tar.gz
+# add_dependency lsb-core # (needs /lib/ld-lsb.so.3)

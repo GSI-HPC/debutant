@@ -1,0 +1,7 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: lmgrd
+Source: http://www.globes.com/support/fnp_utilities_download.htm
+
+Files: *
+Copyright: 2013 Flexera Software LLC
+License: All rights reserved
