@@ -52,7 +52,7 @@ debian_control Homepage $HOMEPAGE
 
 add_debian_files
 
-###
+add_dependency lsb-core
 
 build_architecture $ARCH
 
