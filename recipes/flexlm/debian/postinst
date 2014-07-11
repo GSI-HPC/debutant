@@ -1,0 +1,48 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in    
+    configure)
+               
+        LMGRD_USER=lmgrd
+        LMGRD_DIR=/srv/lmgrd
+        LMGRD_LOGDIR=/var/log/lmgrd/
+        #TODO: read from defaults file?
+        
+        adduser --system \
+            --group \
+            --home $LMGRD_DIR \
+            --no-create-home \
+            --disabled-password \
+            $LMGRD_USER || true
+
+        # create a lmadmin group
+        #  members of this group will be able to run lmdown etc.
+        addgroup--system lmadmin
+        adduser root lmadmin
+
+        # create a directory for the licenses:
+        if [ ! -d /srv/lmgrd ]; then
+            mkdir /srv/lmgrd
+            chgrp lmadmin /srv/lmgrd
+            chown 0770 /srv/lmgrd
+        fi
+
+        chown $LMGRD_USER:adm $LMGRD_LOGDIR
+        ;;
+    
+    abort-upgrade|abort-remove|abort-deconfigure)
+        exit 0
+        ;;
+    
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+    
+esac
+
+#DEBHELPER#
+
+:

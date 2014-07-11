@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+if ! getent passwd mathlm >/dev/null; then
+    adduser --system --no-create-home --group --gecos "Mathematica license server" mathlm
+fi
+
+#DEBHELPER#
