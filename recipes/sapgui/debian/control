@@ -1,0 +1,12 @@
+Source: sapgui
+Section: non-free/busywork
+Priority: optional
+Maintainer: GSI HPC Department <linux-service@gsi.de>
+Build-Depends: java-runtime
+Standards-Version: 3.8.0
+
+Package: sapgui
+Architecture: i386 amd64
+Depends: ${shlibs:Depends}, java7-runtime
+Description: SAP GUI for the Java Environment
+ This package has been automatically created with debutant

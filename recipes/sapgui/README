@@ -1,0 +1,7 @@
+# Recipe for sapgui java SAP GUI
+
+7.30rev9 produces compatibility warnings with OpenJDK 6 but not with 7.
+It seems to work with both though.
+
+sapgui must not be installed while being built, otherwise install.db will
+be cluttered with trash.

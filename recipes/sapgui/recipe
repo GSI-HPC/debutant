@@ -4,34 +4,58 @@
 #  cf. http://scn.sap.com/community/gui
 #
 
-
 PACKAGE=sapgui
 INSTALL_JAR=$1
 
 [ "$INSTALL_JAR" ] || abort Need an archive to extract sapgui from
 
-# HACK: we gather the version from the Jar filename
-#  and seperate all digits with dots
-VERSION=`basename $INSTALL_JAR | sed -e "s/^PlatinGUI\([0-9]\+\)Linux.*/\1/;s/[0-9]/&./g;s/\.$//"`
-
-[ "$VERSION" ] || abort Could not guess version from .jar filename
+#[ "$VERSION" ] || abort Could not guess version from .jar filename
 
 # create a subdir for packaging
-PKG_DIR=${BUILD_DIR}/${PACKAGE}-${VERSION}
- 
+PKG_DIR=${BUILD_DIR}/${PACKAGE}
+
 mkdir ${PKG_DIR}
 
+#--installdir /usr/share \
+env -i java -jar $INSTALL_JAR  --nogui --verbose --force --nostandard \
+    --prefix $PKG_DIR --installdir /usr/share \
+    --logfile $BUILD_DIR/install.log
+
+# FIXME:make-sgpkg::get_version uses the directory name of the extracted files
+VERSION=`basename $PKG_DIR/usr/share/SAPGUI[0-9]* | sed -e "s/^SAPGUI//"`
+
 # link the jar file to the package dir:
-cp $INSTALL_JAR $PKG_DIR
+#cp $INSTALL_JAR $PKG_DIR
+
+mv $PKG_DIR ${BUILD_DIR}/${PACKAGE}-${VERSION}
+
+PKG_DIR="${BUILD_DIR}/${PACKAGE}-${VERSION}"
 
 # create package skeleton:
 debut_dh_make $PKG_DIR
 
+add_debian_files
+
+cat >> $PKG_DIR/debian/links <<EOF
+usr/share/SAPGUI${VERSION}/bin/sapgui   /usr/bin/sapgui
+usr/share/SAPGUI${VERSION}/bin/guilogin /usr/bin/sapguilogon
+usr/share/SAPGUI${VERSION}/bin/guistart /usr/bin/sapguistart
+usr/share/SAPGUI${VERSION}/doc          /usr/share/doc/${PACKAGE}/html
+
+EOF
+
+find $PKG_DIR/usr/share/SAPGUI${VERSION}/inst -type f | \
+    sed -e "s|${PKG_DIR}/\(usr/share/SAPGUI${VERSION}/inst\)\(.*\)|\1\2 /usr/share/icons\2|" \
+    >> $PKG_DIR/debian/links
+
 # this command installs the SAPgui
-INSTALL_CMD="java -jar $INSTALL_JAR  --nogui --verbose --force --nostandard --prefix debian/${PACKAGE} --installdir /usr/share --logfile $BUILD_DIR/install.log"
+# make-sgpkg::extract_sapgui_jar
+#INSTALL_CMD="java -jar $INSTALL_JAR  --nogui --verbose --force --nostandard
+#--prefix debian/${PACKAGE} --installdir /usr/share --logfile $BUILD_DIR/install.log"
 
 # we hook this into debian/rules:
-/bin/echo -e "\noverride_dh_auto_install:\n\t$INSTALL_CMD" >> ${PKG_DIR}/debian/rules
+#/bin/echo -e "\noverride_dh_auto_install:\n\t$INSTALL_CMD" \
+#    >> ${PKG_DIR}/debian/rules
 
 #build_depends lib32stdc++6 [amd64]
 
