@@ -1,0 +1,5 @@
+
+FLEX_DIR=/srv/lmgrd
+FLEX_LOGDIR=/var/log/lmgrd
+
+DAEMON_ARGS="-l +$FLEX_LOGDIR/debug.log -2 -p -local -c $FLEX_DIR/licenses"
