@@ -126,7 +126,7 @@ debut_dh_make() {
 debian_control()  {
     local key=$1
     local value="$2"
-    sed -i -e "s|^\($key:\) .*|\1 $value|" ${PKG_DIR}/debian/control    
+    sed -i -e "s|^\($key:\) .*|\1 $value|" ${PKG_DIR}/debian/control
 }
 
 
@@ -142,6 +142,8 @@ EOF
     # stripping the provided binaries may or may not be a good idea
     # and breaks building for foreign architectures
     echo "override_dh_strip:" >> ${PKG_DIR}/debian/rules
+
+    chmod a+rx ${PKG_DIR}/debian/rules
 }
 
 
