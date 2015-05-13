@@ -10,7 +10,7 @@ Homepage: <insert the upstream URL, if relevant>
 
 Package: debutant
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, binutils-i586-linux-gnu [amd64]
 Recommends: cabextract, libdistro-info-perl
 Description: packaging framework for proprietary software
  Debutant is a package building framework for
