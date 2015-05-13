@@ -71,6 +71,21 @@ add_debian_files() {
     fi
 }
 
+#
+# there are some lintian warnings we cannot do anything about
+#
+add_lintian_overrides() {
+    local package=$1
+    cat <<EOF >> $PKG_DIR/debian/$package.lintian-overrides
+${package} binary: binary-or-shlib-defines-rpath
+${package} binary: embedded-library
+${package} binary: hardening-no-relro
+${package} binary: shlib-with-non-pic-code
+# we override dh_strip as it might break stuff:
+${package} binary: unstripped-binary-or-object
+EOF
+}
+
 # sometimes we want to build i386 packages on amd64
 build_architecture() {
     export DEB_HOST_ARCH=$1
@@ -86,7 +101,7 @@ build_depends() {
 }
 
 build_package() {
-    ( 
+    (
         cd $PKG_DIR
         if [ "$1" != "--keep-revision" ]; then
             local version=$(head -1 debian/changelog | sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
@@ -104,6 +119,7 @@ debut_dh_make() {
     ( cd ${PKG_DIR}; echo | dh_make -s --native )
     # modify rules file to override dh_strip
     debian_rules
+    add_lintian_overrides
 }
 
 # change an option in debian/control
