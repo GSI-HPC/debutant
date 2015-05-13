@@ -1,3 +1,4 @@
-/etc/icaclient/nls/en     /etc/icaclient/nls/current
-/etc/ssl/certs            /usr/lib/ICAClient/keystore/cacerts
-/usr/lib/ICAClient/wfcmgr /usr/bin/wfcmgr
+/etc/icaclient/nls/en        /etc/icaclient/nls/current
+/etc/ssl/certs               /usr/lib/ICAClient/keystore/cacerts
+/usr/lib/ICAClient/npica.so  /usr/lib/mozilla/plugins/npica.so
+/usr/lib/ICAClient/nls/C/eula.txt /usr/lib/ICAClient/eula.txt

@@ -1,0 +1,6 @@
+# these are binary pecularities we cannot do much about:
+icaclient binary: binary-or-shlib-defines-rpath
+icaclient binary: embedded-library
+icaclient binary: hardening-no-relro
+icaclient binary: shlib-with-non-pic-code
+icaclient binary: unstripped-binary-or-object

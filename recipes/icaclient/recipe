@@ -1,8 +1,6 @@
 #!/bin/sh
 #
 # extract ICAclient package and repack it to be suitable for GSI
-#
-# $Id: ica_repack 18509 2012-10-30 17:38:31Z christo $
 # 
 
 #REVISION=1
@@ -32,13 +30,14 @@ PKG=$1
 
 #extract "$ARCHIVE"
 
-[ $PKG ] || abort Need an archive to extract icaclient
+[ $PKG ] || abort "Need an archive (*.deb) to extract icaclient"
 
 # icaclient comes as a Debian package but we repackage it: 
 PKG_NAME=`dpkg-deb -I $PKG | sed -ne "s/ Package: //p"`
 
 # determine version, add dbtnt suffix if missing:
 VERSION=`dpkg-deb -I $PKG | sed -ne "s/ Version: //p"`
+MAJOR_VERSION=`echo $VERSION | cut -f1 -d.`
 if ! expr "$VERSION" : ".*+dbtnt\.[0-9]\+$" > /dev/null; then
     VERSION="${VERSION}+dbtnt.${REVISION}"
 fi
@@ -75,14 +74,16 @@ EOF
 ) > $PKG_DIR/debian/control 
 
 # remove dependencies:
-sed -i -e "s/^\(Depends:\).*/\1/" $PKG_DIR/debian/control
+#sed -i -e "s/^\(Depends:\).*/\1/" $PKG_DIR/debian/control
 
 # Squeeze/AMD64 needs a 32bit libmotif:
 if [ "$TARGET_RELEASE" = "squeeze" -a "$ARCH" = "amd64" ]; then
     add_dependency ia32-libmotif4 nspluginwrapper
 else
-    add_dependency libmotif4
-    build_architecture i386
+    if $MAJOR_VERSION -lt 13; then
+        add_dependency libmotif4
+        build_architecture i386
+    fi
 fi
 
 # Fix paths
@@ -109,33 +110,6 @@ done
 
 # move pkg install scripts out of the way for now:
 #disable_install_scripts
-
-# # install the plugin:
-# case $ARCH in
-#     i386)
-#         # create a link for the plugin (i386 only)
-#         mkdir -p $PKG_DIR/usr/lib/iceweasel/plugins
-#         ln -vs /usr/lib/ICAClient/npica.so $PKG_DIR/usr/lib/iceweasel/plugins
-#         ;;
-#     amd64)
-
-#         if [ "$TARGET_RELEASE" = "squeeze" ]; then
-#         # we have to wrap the plugin at install time:
-#             cat <<-EOF >> $PKG_DIR/DEBIAN/postinst
-# nspluginwrapper -i /usr/lib/ICAClient/npica.so
-# EOF
-        
-#         # remove the nspluginwrapper'd plugins
-#             cat <<-EOF >> $PKG_DIR/DEBIAN/postrm
-# for i in \`nspluginwrapper -l | grep npwrapper.npica\`
-# do
-#     test -e \$i && nspluginwrapper -r \$i 2>/dev/null
-# done
-# EOF
-#         fi
-#         ;;
-# esac
-
 
 #### 
 #
