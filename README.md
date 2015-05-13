@@ -29,6 +29,9 @@ Debutant aims to circumvent these issues by providing some wrappper functions
 and recipes that automatically transform the software into Debian packages 
 that conform to the Debian standards as good as possible.
 
+This provides the chance to improve the quality of proprietary binary blobs by
+applying the debian quality assurance tool chain eg. lintian
+
 # Usage
 
 Available recipes are in the recipes/ subdir.
