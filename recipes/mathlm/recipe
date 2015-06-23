@@ -50,10 +50,9 @@ EOF
 
 echo /var/log/mathlm > $PKG_DIR/debian/dirs
 
-add_initscript
+add_debian_files
 
 # postinst creates a mathlm account:
-add_install_scripts
 add_dependency adduser
 
 debian_control Homepage http://www.wolfram.com/mathematica/
