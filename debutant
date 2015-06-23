@@ -41,9 +41,11 @@ add_dependency() {
     done
 }
 
+
+## DEPRECATED: use add_debian_files and $RECIPE_DIR/debian instead
 add_initscript() {
     local init=$1
-    [ "$init" ] || init=$RECIPE_DIR/init
+    [ "$init" ] || init=$RECIPE_DIR/debian/init
     cp "$init" $PKG_DIR/debian/init
     # also copy over the default file if found:
     [ -e `dirname $init`/default ] && cp `dirname $init`/default $PKG_DIR/debian/default
@@ -51,6 +53,7 @@ add_initscript() {
     #add_dependency "lsb-base (>= 3.2-14)" # versioned depends not supported by add_dependency yet
 }
 
+## DEPRECATED: use add_debian_files and $RECIPE_DIR/debian instead
 add_install_scripts() {
     for file in preinst postinst prerm postrm; do
         [ -e $RECIPE_DIR/$file ] || continue
@@ -61,7 +64,7 @@ add_install_scripts() {
 
 
 #
-# load prepared packaging files
+# load prepared packaging files from $RECIPE_DIR/debian
 #
 add_debian_files() {
     if [ "$PACKAGE" -a -d $RECIPE_DIR/$PACKAGE.debian ]; then
