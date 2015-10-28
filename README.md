@@ -38,3 +38,12 @@ Available recipes are in the recipes/ subdir.
 
 `debutant _recipe_ [ _additional arguments_ ]` runs the given recipe and 
 tries to build the package.
+
+# Requirements
+
+To make effective use of debutant you need to have the standard packaging toolset installed:
+
+- dh-make
+- devscripts + recommends
+- debhelper
+- dpkg-dev + recommends
