@@ -21,7 +21,7 @@ extract $ARCHIVE
 INSTALLER=`find $BUILD_DIR -name '*.sh'`
 
 PACKAGE=mathlm
-VERSION=`basename $INSTALLER | cut -d- -f4`
+VERSION=`basename $ARCHIVE | cut -d_ -f2`
 
 PKG_DIR=$BUILD_DIR/${PACKAGE}-${VERSION}
 
