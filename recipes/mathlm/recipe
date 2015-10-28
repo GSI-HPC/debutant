@@ -7,7 +7,7 @@
 
 ARCHIVE=$1
 
-[ $ARCHIVE ] || abort Need an archive to extract megacli
+[ $ARCHIVE ] || abort Need an archive to extract mathlm
 
 if [ "$2" ]; then
     ARCH=$2
