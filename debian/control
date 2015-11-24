@@ -11,6 +11,16 @@ Homepage: <insert the upstream URL, if relevant>
 Package: debutant
 Architecture: all
 Depends: ${misc:Depends}
-Recommends: cabextract
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Recommends: cabextract, libdistro-info-perl
+Description: packaging framework for proprietary software
+ Debutant is a package building framework for
+ * proprietary software that is shipped as binary only
+ * and where redistribution is normally prohibited
+.
+ Debutant provides 'recipes' to package or repackage commercial software
+ that cannot be included in the Debian archive.
+ Currently recipes exist for:
+ * Citrix receiver (icaclient)
+ * FlexLM license server
+ * IBMs TSM backup-archive client
+ * SAPs java GUI sapgui
