@@ -108,9 +108,21 @@ build_package() {
         cd $PKG_DIR
         if [ "$1" != "--keep-revision" ]; then
             local version=$(head -1 debian/changelog | sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
-            debchange -v ${version//-*/-$REVISION} "Build by debutant"
+            if [[ $version =~ '-' ]]; then
+                # change the existing revision suffix
+                version=${version//-*/-$REVISION}
+            else
+                # add a revision suffix
+                version=${version}-${REVISION}
+            fi
+            debchange -v ${version} -D `lsb_release -cs` --force-distribution \
+                      "Build by debutant"
         fi
-        debuild -b -us -uc -a${DEB_HOST_ARCH}
+        if [ "$PBUILDER" ]; then
+            pdebuild  --pbuilder cowbuilder
+        else
+            debuild -b -us -uc -a${DEB_HOST_ARCH}
+        fi
     )
 }
 
@@ -119,7 +131,7 @@ cleanup() {
 }
 
 debut_dh_make() {
-    ( cd ${PKG_DIR}; echo | dh_make -s --native )
+    ( cd ${PKG_DIR}; echo | dh_make -s --native)
     # modify rules file to override dh_strip
     debian_rules
     add_lintian_overrides
@@ -257,7 +269,7 @@ extract() {
 
 fetch() {
     local url=$1
-    
+
     # guess the filename from the Location: header of the HTTP response
     #  (to prevent downloaded files being called 'download' aso.
     filename=`curl -I $url | sed -ne "s|Location: .*/\(.*\)\(?.*\)|\1|p"`
@@ -268,18 +280,30 @@ fetch() {
 }
 
 
+#
+# list all available recipes:
+
+list_recipes() {
+    for D in $RECIPE_DIRS; do
+        [ -d $D ] || continue
+        ls $D/*/recipe | xargs -n1 dirname | xargs -n1 basename | sort
+    done
+}
+
+
 prepare() {
     # some preparations:
     ME=`whoami`
     [ "$DEBEMAIL" ]    || DEBEMAIL="$ME@"`hostname -f`
-    [ "$DEBFULLNAME" ] || DEBFULLNAME=`getent passwd $ME | cut -f 5 -d : | cut -f 1 -d,`
-    
+    [ "$DEBFULLNAME" ] ||
+        DEBFULLNAME=`getent passwd $ME | cut -f 5 -d : | cut -f 1 -d,`
+
     BUILD_DIR=`mktemp -d -p .`
 }
 
 #export these functions to subshells (ie. our recipes):
 export abort add_dependency cleanup debian_control debian_rules \
-    disable_install_scripts extract fetch prepare 
+    disable_install_scripts extract fetch prepare
 
 #########
 #
@@ -292,13 +316,24 @@ RECIPE_DIRS="`dirname $0`/recipes /usr/lib/debutant/recipes"
 # ... /usr/local/lib/debutant/recipes??, /var/lib/debutant/recipes???
 REVISION=1
 
-while getopts "r:d" OPTION; do
+while getopts "hlr:dp" OPTION; do
     case $OPTION in
-        r)
-            REVISION=$OPTARG           
-            ;;
         d)
             DEBUG=1
+            ;;
+        h)
+            #usage
+            exit 1
+            ;;
+        l)
+            list_recipes
+            exit 0
+            ;;
+        r)
+            REVISION=$OPTARG
+            ;;
+        p)
+            PBUILDER=1
             ;;
         *)
             ;;
@@ -316,10 +351,10 @@ for D in $RECIPE_DIRS; do
     [ -d $D ] || continue
     if [ -e $D/$RECIPE/recipe ]; then
         FOUND=1
-        
+
         set -e
         [ $DEBUG ] && set -x
-        
+
         RECIPE_DIR=`dirname $0`/recipes/$RECIPE
 
         # preparations are performed here, not inside recipes
@@ -329,16 +364,16 @@ for D in $RECIPE_DIRS; do
         # stage 1: extract and convert the archive
         . $RECIPE_DIR/recipe $@
         #. $RECIPE_DIR/recipe extract 1$@
-        
-        # now we have a PKG_DIR and put debian/... into it:        
+
+        # now we have a PKG_DIR and put debian/... into it:
         #dh_make ... #preseeded with recipe config?
         #cp -b $RECIPE_DIR/debian/* $PKG_DIR/debian/
-        
+
         # stage 2: customize debian files:
         #. $RECIPE_DIR/recipe package $@
-        
+
         # stage 3: we build the package and clean up
-        
+
         if [ $DEBUG ]; then
             set +x
         else
