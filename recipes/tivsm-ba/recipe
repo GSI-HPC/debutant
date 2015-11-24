@@ -3,14 +3,16 @@
 ARCHIVE=$1
 
 if [ -z $ARCHIVE ]; then
-   ARCHIVE=`fetch ftp://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v6r4/Linux/LinuxX86/BA/v641/6.4.1.0-TIV-TSMBAC-LinuxX86.tar`
+   ARCHIVE=`fetch ftp://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v6r4/Linux/LinuxX86/BA/v643/6.4.3.0-TIV-TSMBAC-LinuxX86.tar`
 fi
+
+VERSION=`echo $ARCHIVE | sed -ne "s/^\(\([0-9]\.\)\{2\}[0-9]\+\).*/\1/p"`
 
 tar -xvf $ARCHIVE -C $BUILD_DIR
 
 ### gskcrypt64
 
-extract $BUILD_DIR/gskcrypt64-8.0.14.26.linux.x86_64.rpm
+extract $BUILD_DIR/gskcrypt64-8.0.*.linux.x86_64.rpm
 PKG_DIR=$BUILD_DIR/gskcrypt64-8.0
 PACKAGE=gskcrypt64
 disable_install_scripts
@@ -22,7 +24,7 @@ drop_result
 
 ### gskssl64
 
-extract $BUILD_DIR/gskssl64-8.0.14.26.linux.x86_64.rpm
+extract $BUILD_DIR/gskssl64-8.0.*.linux.x86_64.rpm
 PKG_DIR=$BUILD_DIR/gskssl64-8.0
 PACKAGE=gskssl64
 disable_install_scripts
@@ -36,7 +38,7 @@ drop_result
 
 extract $BUILD_DIR/TIVsm-API64.x86_64.rpm
 
-PKG_DIR=$BUILD_DIR/TIVsm-API64-6.4.1
+PKG_DIR=$BUILD_DIR/TIVsm-API64-${VERSION}
 
 PACKAGE=tivsm-api64
 
@@ -53,7 +55,7 @@ drop_result
 
 extract $BUILD_DIR/TIVsm-BA.x86_64.rpm
 
-PKG_DIR=$BUILD_DIR/TIVsm-BA-6.4.1
+PKG_DIR=$BUILD_DIR/TIVsm-BA-${VERSION}
 PACKAGE=tivsm-ba
 
 ## Stage 2
