@@ -1,0 +1,9 @@
+opt/lsi/msm/lib/libstorelib*.so.*                         usr/lib/
+usr/local/MegaRAID*/Common/Languages/en/*.xml             usr/lib/megaraid-storage-manager/Common/Languages/en
+usr/local/MegaRAID*/Framework/Framework.jar               usr/lib/megaraid-storage-manager/Framework
+usr/local/MegaRAID*/Framework/framework.properties        usr/lib/megaraid-storage-manager/Framework
+usr/local/MegaRAID*/Framework/*.so                        usr/lib/megaraid-storage-manager/Framework
+usr/local/MegaRAID*/Framework/plugins/*class              usr/lib/megaraid-storage-manager/Framework/plugins
+usr/local/MegaRAID*/MegaMonitor/config-current.xml        etc/megaraid-storage-manager
+usr/local/MegaRAID*/schema.xml                            usr/lib/megaraid-storage-manager
+usr/local/MegaRAID*/vivaldikeys                           usr/lib/megaraid-storage-manager

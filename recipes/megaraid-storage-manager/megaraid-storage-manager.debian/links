@@ -1,0 +1,8 @@
+etc/megaraid-storage-manager/config-current.xml             usr/lib/megaraid-storage-manager/MegaMonitor/config-current.xml
+usr/lib/megaraid-storage-manager/lib/libstorelib.so.3       usr/lib/megaraid-storage-manager/lib/libstorelib.so
+usr/lib/megaraid-storage-manager/lib/libstorelibir.so.5     usr/lib/megaraid-storage-manager/lib/libstorelibir.so
+usr/lib/megaraid-storage-manager/lib/libstorelibir-2.so.14  usr/lib/megaraid-storage-manager/lib/libstorelibir-2.so
+usr/lib/megaraid-storage-manager/schema.xml                 usr/lib/megaraid-storage-manager/Framework/schema.xml
+usr/lib/megaraid-storage-manager/vivaldikeys                usr/lib/megaraid-storage-manager/Framework/vivaldikeys
+var/log/megaraid-storage-manager/DebugLog                   usr/lib/megaraid-storage-manager/DebugLog
+var/log/megaraid-storage-manager/storelibjnidebug.txt       usr/lib/megaraid-storage-manager/Framework//storelibjnidebug.txt
