@@ -42,13 +42,18 @@ add_dependency() {
 }
 
 
-## DEPRECATED: use add_debian_files and $RECIPE_DIR/debian instead
+# install an initscript the debian way
+#  recommendation for custom init scripts:
+#  place in $RECIPE_DIR/debian/(init|default) and use add_debian_files
 add_initscript() {
     local init=$1
+
     [ "$init" ] || init=$RECIPE_DIR/debian/init
     cp "$init" $PKG_DIR/debian/init
     # also copy over the default file if found:
-    [ -e `dirname $init`/default ] && cp `dirname $init`/default $PKG_DIR/debian/default
+    if [ -e `dirname $init`/default ]; then
+        cp `dirname $init`/default $PKG_DIR/debian/default
+    fi
     # 'modern' initscripts make use of lsb functions:
     #add_dependency "lsb-base (>= 3.2-14)" # versioned depends not supported by add_dependency yet
 }
@@ -89,9 +94,12 @@ ${package} binary: unstripped-binary-or-object
 EOF
 }
 
-# sometimes we want to build i386 packages on amd64
+# sometimes the debian architecture has to be set explicitly
+#  e.g. if we want to build i386 packages on amd64
 build_architecture() {
-    export DEB_HOST_ARCH=$1
+    DEB_HOST_ARCH=$1
+    [ "$DEB_HOST_ARCH" ] || DEB_HOST_ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+    export DEB_HOST_ARCH
     debian_control Architecture $DEB_HOST_ARCH
 }
 
@@ -103,6 +111,8 @@ build_depends() {
     done
 }
 
+# build the package
+#  adds a revision (default 1) unless --keep-revision is given
 build_package() {
     (
         cd $PKG_DIR
@@ -208,22 +218,24 @@ extract() {
     local blob="$1"
     local dir=$2
     local mime=`file --brief --mime-type "$blob"`
-        
+
     if [ ! -r $blob ]; then
         [ -r $BUILD_DIR/$blob ] && blob=$BUILD_DIR/$blob
     fi
-    
+
     [ "$dir" ] || dir=$BUILD_DIR
-    
+
     [ -d "$dir" ] || mkdir -p "$dir"
 
     case $mime in
 
-        application/x-gzip)
+        application/gzip|application/x-gzip)
             case $blob in
+                # TAR file:
                 *.tar.gz|*.tgz)
                     tar xfz $blob -C $dir
                     ;;
+                # something else:
                 *)
                     gunzip -cd > $dir/`basename "$blob" .gz`
                     ;;
