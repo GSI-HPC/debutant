@@ -1,0 +1,46 @@
+#
+# megaraid-storage-manager
+#
+
+# no direct download
+ARCHIVE=$1
+
+# extract the tgz:
+extract $ARCHIVE
+
+### libutils:
+
+extract $BUILD_DIR/disk/Lib_Utils2-1.00-07.noarch.rpm
+
+PKG_DIR=$BUILD_DIR/Lib_Utils2-1.00
+
+build_package --keep-revision
+
+drop_result
+
+
+### megaraid-storage-manager
+
+extract $BUILD_DIR/disk/MegaRAID_Storage_Manager-15.08.01-02.noarch.rpm
+
+PKG_DIR=$BUILD_DIR/MegaRAID_Storage_Manager-15.08.01
+
+# replace alien's debian/rules with generic one:
+debian_rules
+
+# tweaks to debian/control
+debian_control Section non-free/admin
+# 'noarch' obviously is non-sense
+build_architecture
+add_dependency libjaxen-java liblog4j1.2-java '{shlibs:Depends}'
+
+# move away original postinst and friends
+disable_install_scripts
+
+add_debian_files
+
+add_initscript $PKG_DIR/etc/init.d/vivaldiframeworkd
+
+build_package --keep-revision
+
+drop_result
