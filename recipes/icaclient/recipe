@@ -37,9 +37,11 @@ PKG_NAME=`dpkg-deb -I $PKG | sed -ne "s/ Package: //p"`
 
 # determine version, add dbtnt suffix if missing:
 VERSION=`dpkg-deb -I $PKG | sed -ne "s/ Version: //p"`
+DEBIAN_FLAVOR=`lsb_release -cs`
+
 MAJOR_VERSION=`echo $VERSION | cut -f1 -d.`
-if ! expr "$VERSION" : ".*+dbtnt\.[0-9]\+$" > /dev/null; then
-    VERSION="${VERSION}+dbtnt.${REVISION}"
+if ! expr "$VERSION" : ".*+dbtnt+${DEBIAN_FLAVOR}\.[0-9]\+$" > /dev/null; then
+    VERSION="${VERSION}+dbtnt+${DEBIAN_FLAVOR}.${REVISION}"
 fi
 
 PKG_DIR="$BUILD_DIR/${PKG_NAME}-${VERSION}"
@@ -87,17 +89,22 @@ else
 fi
 
 # Fix paths
-sed -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/usr/share/menu/icaclient > $PKG_DIR/debian/menu
+sed -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" \
+    $PKG_DIR/usr/share/menu/icaclient > $PKG_DIR/debian/menu
 
 if [ -d $PKG_DIR/usr/share/applications/ ]; then
     # only for 13.0
-    sed -i -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" $PKG_DIR/usr/share/applications/*desktop
+    sed -i -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g;s| -icaroot| --icaroot|" \
+        $PKG_DIR/usr/share/applications/*desktop
     echo "usr/share/applications/" >>  $PKG_DIR/debian/install
 fi
 
 # wfcmgr vanished in 13.0:
 if [ -e $PKG_DIR/opt/Citrix/ICAClient/wfcmgr ]; then
-    echo "/usr/lib/ICAClient/wfcmgr /usr/bin/wfcmgr" >> $PKG_DIR/debian/links
+    echo "/usr/lib/ICAClient/wfcmgr /usr/bin/icaclient" >> $PKG_DIR/debian/links
+elif [ -e $PKG_DIR/opt/Citrix/ICAClient/selfservice ] ; then
+    echo "/usr/lib/ICAClient/selfservice /usr/bin/icaclient" \
+         >> $PKG_DIR/debian/links
 fi
 
 # this will be linked to /etc/ssl/certs/:
@@ -105,13 +112,14 @@ rm -r $PKG_DIR/opt/Citrix/ICAClient/keystore/cacerts
 
 # more links ...
 for ini in `ls $PKG_DIR/etc/icaclient/nls/en/*.ini | xargs -n1 basename`; do
-    echo /etc/icaclient/nls/current/${ini} /usr/lib/ICAClient/config/${ini} >> $PKG_DIR/debian/links
+    echo /etc/icaclient/nls/current/${ini} /usr/lib/ICAClient/config/${ini} \
+         >> $PKG_DIR/debian/links
 done
 
 # move pkg install scripts out of the way for now:
 #disable_install_scripts
 
-#### 
+####
 #
 # finish it up
 #
@@ -119,4 +127,3 @@ done
 build_package
 
 drop_result
-

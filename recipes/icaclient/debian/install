@@ -1,2 +1,2 @@
-etc /
-opt/Citrix/ICAClient /usr/lib
+etc/icaclient        etc
+opt/Citrix/ICAClient usr/lib
