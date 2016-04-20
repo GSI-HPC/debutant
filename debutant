@@ -187,10 +187,13 @@ debian_rules_add_override() {
     :
 }
 
-
 # add something to debian/install
 debian_install() {
-    echo $@ >> $PKG_DIR/debian/install
+    if [ -e $PKG_DIR/debian/$PACKAGE.install ]; then
+        echo $@ >> $PKG_DIR/debian/$PACKAGE.install
+    else
+        echo $@ >> $PKG_DIR/debian/install
+    fi
 }
 
 # add something to debian/docs
@@ -303,11 +306,14 @@ fetch() {
 
 #
 # list all available recipes:
-
+#
 list_recipes() {
+    # TODO: Add a recipe description to the output
+    echo "Available recipes:"
     for D in $RECIPE_DIRS; do
         [ -d $D ] || continue
-        ls $D/*/recipe | xargs -n1 dirname | xargs -n1 basename | sort
+        ls $D/*/recipe | xargs -n1 dirname | xargs -n1 basename | sort |
+            sed -e "s/^/  /"
     done
 }
 
@@ -320,6 +326,20 @@ prepare() {
         DEBFULLNAME=`getent passwd $ME | cut -f 5 -d : | cut -f 1 -d,`
 
     BUILD_DIR=`mktemp -d -p .`
+}
+
+
+usage() {
+    cat <<EOF
+Usage: `basename $0` [opts] <recipe>
+Avalable options:
+  -d:            debug output
+  -l:            list available recipes
+  -p:            use pbuilder for packaging
+  -r <revision>: Debian package revision (default: 1)
+
+EOF
+    list_recipes
 }
 
 #export these functions to subshells (ie. our recipes):
@@ -343,8 +363,8 @@ while getopts "hlr:dp" OPTION; do
             DEBUG=1
             ;;
         h)
-            #usage
-            exit 1
+            usage
+            exit 0
             ;;
         l)
             list_recipes
@@ -365,6 +385,11 @@ shift $(($OPTIND - 1))
 
 RECIPE=$1
 shift
+
+if [ -z "$RECIPE" ]; then
+    list_recipes
+    exit
+fi
 
 FOUND=
 
