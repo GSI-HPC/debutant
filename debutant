@@ -72,13 +72,15 @@ add_install_scripts() {
 # load prepared packaging files from $RECIPE_DIR/debian
 #
 add_debian_files() {
-    if [ "$1" ]; then
-        # read package name from the command line
-        PACKAGE=$1
-    elif [ -r $PKG_DIR/debian/control ]; then
-        # we already have a debian/control in place (e.g. from alien)
-        #  and read the package name from there:
-        PACKAGE=`sed -ne 's/^Source: //p' $PKG_DIR/debian/control`
+    if [ -z "$PACKAGE" ]; then
+        if [ "$1" ]; then
+            # read package name from the command line
+            PACKAGE=$1
+        elif [ -r $PKG_DIR/debian/control ]; then
+            # we already have a debian/control in place (e.g. from alien)
+            #  and read the package name from there:
+            PACKAGE=`sed -ne 's/^Source: //p' $PKG_DIR/debian/control`
+        fi
     fi
 
     if [ "$PACKAGE" -a -d $RECIPE_DIR/$PACKAGE.debian ]; then
