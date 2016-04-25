@@ -11,5 +11,4 @@ usr/bin/dsmc 	usr/bin/dsmtca
 usr/bin/dsmc 	usr/bin/dsmtrace
 usr/bin/dsmj	usr/bin/dsm
 
-usr/share/tsm/lang/EN_US  usr/lib/tsm/ba/bin/EN_US
 usr/lib/tsm/ba/bin        opt/tivoli/tsm/client/ba/bin

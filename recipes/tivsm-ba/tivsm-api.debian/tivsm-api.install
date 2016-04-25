@@ -1,0 +1,2 @@
+opt/tivoli/tsm/client/api/bin64/dsmtca 	  usr/lib/tsm/api/bin
+opt/tivoli/tsm/client/api/bin64/lib*.so*  usr/lib/x86_64-linux-gnu

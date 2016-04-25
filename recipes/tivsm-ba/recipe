@@ -40,16 +40,39 @@ extract $BUILD_DIR/TIVsm-API64.x86_64.rpm
 
 PKG_DIR=$BUILD_DIR/TIVsm-API64-${VERSION}
 
-PACKAGE=tivsm-api64
+PACKAGE=tivsm-api
 
 disable_install_scripts
 
 add_debian_files
 debian_control Maintainer "$DEBFULLNAME <$DEBEMAIL>"
 
+
+# TODO: /usr/share/locale/en/ does not look like the right location
+if [ -e $PKG_DIR/opt/tivoli/tsm/client/lang/EN_US/dsmclientV3.cat ]; then
+    # v6:
+    debian_install opt/tivoli/tsm/client/lang/EN_US/dsmclientV3.cat usr/share/locale/en/
+elif [ -e $PKG_DIR/opt/tivoli/tsm/client/api/bin64/EN_US/dsmclientV3.cat ]; then
+    # v7:
+    debian_install opt/tivoli/tsm/client/api/bin64/EN_US/dsmclientV3.cat usr/share/locale/en/
+fi
+
+# v6:
+if [ -d $PKG_DIR/opt/tivoli/tsm/client/lang ]; then
+    debian_install opt/tivoli/tsm/client/lang usr/share/tsm
+fi
+
+# v7:
+ls -d1 $PKG_DIR/opt/tivoli/tsm/client/api/bin64/[A-Z][A-Z]_[A-Z][A-Z] |
+    sed -e "s|$PKG_DIR/||" |
+    while read DIR; do
+        debian_install $DIR usr/share/tsm/lang
+    done
+
 build_package
 
 drop_result
+
 
 ### TSM BA
 
@@ -57,8 +80,6 @@ extract $BUILD_DIR/TIVsm-BA.x86_64.rpm
 
 PKG_DIR=$BUILD_DIR/TIVsm-BA-${VERSION}
 PACKAGE=tivsm-ba
-
-## Stage 2
 
 disable_install_scripts
 
@@ -71,6 +92,11 @@ add_dependency "ksh | mksh | pdksh | zsh"
 
 debian_control Section non-free/admin
 debian_control Replaces tsm-ba
+
+if [ ! -e $PKG_DIR/opt/tivoli/tsm/client/ba/bin/EN_US ]; then
+    debian_links usr/share/tsm/lang/EN_US usr/lib/tsm/ba/bin/EN_US
+fi
+
 build_package
 
 drop_result
