@@ -3,100 +3,114 @@
 ARCHIVE=$1
 
 if [ -z $ARCHIVE ]; then
-   ARCHIVE=`fetch ftp://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v6r4/Linux/LinuxX86/BA/v643/6.4.3.0-TIV-TSMBAC-LinuxX86.tar`
+   ARCHIVE=`fetch ftp://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v7r1/Linux/LinuxX86_DEB/BA/v714/7.1.4.0-TIV-TSMBAC-LinuxX86_DEB.tar`
 fi
 
 VERSION=`echo $ARCHIVE | sed -ne "s/^\(\([0-9]\.\)\{2\}[0-9]\+\).*/\1/p"`
 
 tar -xvf $ARCHIVE -C $BUILD_DIR
 
+
 ### gskcrypt64
 
-extract $BUILD_DIR/gskcrypt64-8.0.*.linux.x86_64.rpm
-PKG_DIR=$BUILD_DIR/gskcrypt64-8.0
 PACKAGE=gskcrypt64
-disable_install_scripts
+PKG_DIR=$BUILD_DIR/gskcrypt64-8.0
+extract $BUILD_DIR/gskcrypt64_8.0-*.linux.x86_64.deb $PKG_DIR
+
+#disable_install_scripts
 add_debian_files
+
+# MAKE SURE THE LIBS ARE NOT STRIPPED !!!
+# Otherwise signatures in ICCSIG.txt will not match
+debian_rules 
+
+cat $PKG_DIR/DEBIAN/control >> $PKG_DIR/debian/control
+cp $PKG_DIR/usr/share/doc/$PACKAGE/copyright $PKG_DIR/debian
+zcat $PKG_DIR/usr/share/doc/$PACKAGE/changelog.Debian.gz > $PKG_DIR/debian/changelog
 debian_control Section non-free/libs
 # package version is something like 8.0-15.26
 build_package --keep-revision
 drop_result
 
+
 ### gskssl64
 
-extract $BUILD_DIR/gskssl64-8.0.*.linux.x86_64.rpm
-PKG_DIR=$BUILD_DIR/gskssl64-8.0
 PACKAGE=gskssl64
-disable_install_scripts
+PKG_DIR=$BUILD_DIR/gskssl64-8.0
+extract $BUILD_DIR/gskssl64_8.0-*.linux.x86_64.deb $PKG_DIR
+
+#disable_install_scripts
 add_debian_files
+cat $PKG_DIR/DEBIAN/control >> $PKG_DIR/debian/control
+cp $PKG_DIR/usr/share/doc/$PACKAGE/copyright $PKG_DIR/debian
+zcat $PKG_DIR/usr/share/doc/$PACKAGE/changelog.Debian.gz \
+     > $PKG_DIR/debian/changelog
 debian_control Section non-free/libs
+ls -1 $PKG_DIR/usr/local/ibm/gsk8_64/lib64/libgsk*_64.so |
+    while read lib; do
+        lib_bn=`basename $lib`
+        echo "usr/lib/ibm/gsk8_64/lib64/$lib_bn usr/lib/$lib_bn" \
+             >> $PKG_DIR/debian/links
+    done
+
 # see above
 build_package --keep-revision
 drop_result
 
 ### TSM API
 
-extract $BUILD_DIR/TIVsm-API64.x86_64.rpm
+PACKAGE=tivsm-api64
+PKG_DIR=$BUILD_DIR/tivsm-api64
+extract $BUILD_DIR/tivsm-api64.amd64.deb $PKG_DIR
 
-PKG_DIR=$BUILD_DIR/TIVsm-API64-${VERSION}
-
-PACKAGE=tivsm-api
-
-disable_install_scripts
+VERSION=`sed -ne "s/Version:[[:space:]]\+//p" $PKG_DIR/DEBIAN/control`
+#disable_install_scripts
 
 add_debian_files
-debian_control Maintainer "$DEBFULLNAME <$DEBEMAIL>"
+cat $PKG_DIR/DEBIAN/control >> $PKG_DIR/debian/control
+#cp $PKG_DIR/DEBIAN/changelog $PKG_DIR/debian/changelog
 
+(
+    cd $PKG_DIR
+    debchange --package ${PACKAGE} --v ${VERSION} -D `lsb_release -cs` \
+              --create --force-distribution "Build by debutant"
+)
 
-# TODO: /usr/share/locale/en/ does not look like the right location
-if [ -e $PKG_DIR/opt/tivoli/tsm/client/lang/EN_US/dsmclientV3.cat ]; then
-    # v6:
-    debian_install opt/tivoli/tsm/client/lang/EN_US/dsmclientV3.cat usr/share/locale/en/
-elif [ -e $PKG_DIR/opt/tivoli/tsm/client/api/bin64/EN_US/dsmclientV3.cat ]; then
-    # v7:
-    debian_install opt/tivoli/tsm/client/api/bin64/EN_US/dsmclientV3.cat usr/share/locale/en/
-fi
-
-# v6:
-if [ -d $PKG_DIR/opt/tivoli/tsm/client/lang ]; then
-    debian_install opt/tivoli/tsm/client/lang usr/share/tsm
-fi
-
-# v7:
-ls -d1 $PKG_DIR/opt/tivoli/tsm/client/api/bin64/[A-Z][A-Z]_[A-Z][A-Z] |
-    sed -e "s|$PKG_DIR/||" |
-    while read DIR; do
-        debian_install $DIR usr/share/tsm/lang
-    done
-
-build_package
+build_package --keep-revision
 
 drop_result
 
 
 ### TSM BA
 
-extract $BUILD_DIR/TIVsm-BA.x86_64.rpm
-
-PKG_DIR=$BUILD_DIR/TIVsm-BA-${VERSION}
 PACKAGE=tivsm-ba
+PKG_DIR=$BUILD_DIR/$PACKAGE
+extract $BUILD_DIR/tivsm-ba.amd64.deb $PKG_DIR
 
-disable_install_scripts
+#disable_install_scripts
 
 add_debian_files
 
-add_dependency tivsm-api
-
+grep -v "^\(Maintainer\|\):" $PKG_DIR/DEBIAN/control >> $PKG_DIR/debian/control
+add_dependency tivsm-api64
 # needs ksh compatible interpreter:
 add_dependency "ksh | mksh | pdksh | zsh"
-
 debian_control Section non-free/admin
 debian_control Replaces tsm-ba
 
-if [ ! -e $PKG_DIR/opt/tivoli/tsm/client/ba/bin/EN_US ]; then
-    debian_links usr/share/tsm/lang/EN_US usr/lib/tsm/ba/bin/EN_US
-fi
+(
+    cd $PKG_DIR
+    debchange --package ${PACKAGE} --v ${VERSION} -D `lsb_release -cs` \
+              --create --force-distribution "Build by debutant"
+)
 
-build_package
+debian_install debian/dsmc usr/bin
+debian_install debian/dsmj usr/bin
+
+#if [ ! -e $PKG_DIR/opt/tivoli/tsm/client/ba/bin/EN_US ]; then
+#    debian_links usr/share/tsm/lang/EN_US usr/lib/tsm/ba/bin/EN_US
+#fi
+
+build_package --keep-revision
 
 drop_result

@@ -36,7 +36,7 @@ if [ -z "$DSM_LOG" ]; then
 	export DSM_LOG	
 fi
 
-export DSM_DIR=/usr/lib/tsm/ba/bin
+export DSM_DIR=/usr/lib/tsm/client/ba/bin
 
 ### Start the JavaGUI Application ###
 

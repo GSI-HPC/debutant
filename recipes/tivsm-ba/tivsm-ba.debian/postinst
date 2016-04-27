@@ -3,14 +3,14 @@
 set -e
 
 GROUP=tsm
-DSMTCA=/usr/lib/tsm/ba/bin/dsmtca
+DSMTCA=/usr/lib/tsm/client/ba/bin/dsmtca
 LOGDIR=/var/log/tsm
 
 if [ "$1" = configure ]; then
     if [ -z `getent group $GROUP` ]; then
         addgroup --system --quiet $GROUP
     fi
-    
+
     chgrp $GROUP $DSMTCA
     chmod 4754   $DSMTCA
 

@@ -3,17 +3,10 @@ Section: non-free/libs
 Priority: extra
 Maintainer: Somebody <blafasel@example.com>
 
-Package: tivsm-api
-Architecture: amd64
-Depends: ${shlibs:Depends}, gskcrypt64, gskssl64
-Replaces: tivsm-api64, tsm-api
-Description: IBM Tivoli Storage Manager API
- .
- Debianized by debutant
-
 Package: tivsm-api-dev
 Architecture: all
 Depends: tivsm-api 
 Description: Tivoli Storage Manager API header files and samples
  .
  Debianized by debutant
+
