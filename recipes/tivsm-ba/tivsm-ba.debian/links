@@ -12,3 +12,7 @@ usr/bin/dsmc 	usr/bin/dsmtrace
 usr/bin/dsmj	usr/bin/dsm
 
 #usr/lib/tsm/client/ba/bin        opt/tivoli/tsm/client/ba/bin
+
+# /usr might be read-only, therefore create links
+var/lock/dsmopt.lock      usr/lib/tsm/client/ba/bin/dsmopt.lock
+var/lock/tsm/tsmstats.lck usr/lib/tsm/client/ba/bin/tsmstats.lck
