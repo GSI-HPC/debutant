@@ -36,8 +36,12 @@ add_dependency() {
     fi
 
     for PKG in "$@"; do
-        grep -q "^${depends}: .*\<$PKG\>" $PKG_DIR/debian/control \
-            || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $PKG_DIR/debian/control
+        if grep -q "^${depends}: .*" $PKG_DIR/debian/control; then
+            grep -q "^${depends}: .*\<$PKG\>" $PKG_DIR/debian/control \
+                || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $PKG_DIR/debian/control
+        else
+            echo "${depends}: $PKG" >> $PKG_DIR/debian/control
+        fi
     done
 }
 
