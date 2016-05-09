@@ -63,16 +63,20 @@ PACKAGE=tivsm-api64
 PKG_DIR=$BUILD_DIR/tivsm-api64
 extract $BUILD_DIR/tivsm-api64.amd64.deb $PKG_DIR
 
-VERSION=`sed -ne "s/Version:[[:space:]]\+//p" $PKG_DIR/DEBIAN/control`
+OV=`sed -ne "s/Version:[[:space:]]\+//p" $PKG_DIR/DEBIAN/control`
 #disable_install_scripts
 
+VERSION=${OV%-*}
+OR=${OV#*-}
+MY_REV=${OR}+dbtnt.$REVISION
+
 add_debian_files
-cat $PKG_DIR/DEBIAN/control >> $PKG_DIR/debian/control
+grep -v "^\(Maintainer\|Section\|Version\):" $PKG_DIR/DEBIAN/control >> $PKG_DIR/debian/control
 #cp $PKG_DIR/DEBIAN/changelog $PKG_DIR/debian/changelog
 
 (
     cd $PKG_DIR
-    debchange --package ${PACKAGE} --v ${VERSION} -D `lsb_release -cs` \
+    debchange --package ${PACKAGE} --v ${VERSION}-${MY_REV} -D `lsb_release -cs` \
               --create --force-distribution "Build by debutant"
 )
 
@@ -91,16 +95,23 @@ extract $BUILD_DIR/tivsm-ba.amd64.deb $PKG_DIR
 
 add_debian_files
 
-grep -v "^\(Maintainer\|\):" $PKG_DIR/DEBIAN/control >> $PKG_DIR/debian/control
+grep -v "^\(Maintainer\|Section\|Pre-Depends\|Version\):" $PKG_DIR/DEBIAN/control >> $PKG_DIR/debian/control
 add_dependency tivsm-api64
 # needs ksh compatible interpreter:
 add_dependency "ksh | mksh | pdksh | zsh"
 debian_control Section non-free/admin
 debian_control Replaces tsm-ba
 
+OV=`sed -ne "s/Version:[[:space:]]\+//p" $PKG_DIR/DEBIAN/control`
+#disable_install_scripts
+
+VERSION=${OV%-*}
+OR=${OV#*-}
+MY_REV=${OR}+dbtnt.$REVISION
+
 (
     cd $PKG_DIR
-    debchange --package ${PACKAGE} --v ${VERSION} -D `lsb_release -cs` \
+    debchange --package ${PACKAGE} --v ${VERSION}-${MY_REV} -D `lsb_release -cs` \
               --create --force-distribution "Build by debutant"
 )
 
