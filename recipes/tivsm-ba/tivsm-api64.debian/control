@@ -5,7 +5,7 @@ Maintainer: Somebody <blafasel@example.com>
 
 Package: tivsm-api-dev
 Architecture: all
-Depends: tivsm-api 
+Depends: tivsm-api64 | tivsm-api
 Description: Tivoli Storage Manager API header files and samples
  .
  Debianized by debutant
