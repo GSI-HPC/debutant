@@ -101,6 +101,7 @@ add_dependency tivsm-api64
 add_dependency "ksh | mksh | pdksh | zsh"
 debian_control Section non-free/admin
 debian_control Replaces tsm-ba
+debian_control Conflicts tsm-ba
 
 OV=`sed -ne "s/Version:[[:space:]]\+//p" $PKG_DIR/DEBIAN/control`
 #disable_install_scripts
