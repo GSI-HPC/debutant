@@ -155,6 +155,11 @@ cleanup() {
     [ -d $BUILD_DIR ] && rm -r $BUILD_DIR
 }
 
+#
+# create initial packaging files with dh_make
+#
+#  TODO: add option to send -p packagename_version to dh_make
+#
 debut_dh_make() {
     ( cd ${PKG_DIR}; echo | dh_make -s --native)
     # modify rules file to override dh_strip
@@ -187,7 +192,7 @@ EOF
 }
 
 
-# Not implemented yet: add an override to a dh-style debian/rules file
+# TODO: Not implemented yet: add an override to a dh-style debian/rules file
 #  (as created by debian_rules (see above) or dh_make
 debian_rules_add_override() {
     :
@@ -302,10 +307,10 @@ fetch() {
 
     # guess the filename from the Location: header of the HTTP response
     #  (to prevent downloaded files being called 'download' aso.
-    filename=`curl -I $url | sed -ne "s|Location: .*/\(.*\)\(?.*\)|\1|p"`
+    #filename=`curl -I $url | sed -ne "s|Location: .*/\(.*\)\(?.*\)|\1|p"`
     # fallback:
-    [ "$filename" ] || filename=`basename $url`
-    curl -o $filename $url
+    #[ "$filename" ] || filename=`basename $url`
+    filename=`curl --silent --remote-name --remote-header-name -\# $url -w "%{filename_effective}"` # -o "filename" --remote-header-name
     echo $filename
 }
 
@@ -332,6 +337,8 @@ prepare() {
         DEBFULLNAME=`getent passwd $ME | cut -f 5 -d : | cut -f 1 -d,`
 
     BUILD_DIR=`mktemp -d -p .`
+
+    PKG_DIR=${BUILD_DIR}/${RECIPE_NAME}
 }
 
 
@@ -389,10 +396,10 @@ done
 
 shift $(($OPTIND - 1))
 
-RECIPE=$1
+RECIPE_NAME=$1
 shift
 
-if [ -z "$RECIPE" ]; then
+if [ -z "$RECIPE_NAME" ]; then
     list_recipes
     exit
 fi
@@ -401,13 +408,13 @@ FOUND=
 
 for D in $RECIPE_DIRS; do
     [ -d $D ] || continue
-    if [ -e $D/$RECIPE/recipe ]; then
+    if [ -e $D/$RECIPE_NAME/recipe ]; then
         FOUND=1
 
         set -e
         [ $DEBUG ] && set -x
 
-        RECIPE_DIR=`dirname $0`/recipes/$RECIPE
+        RECIPE_DIR=`dirname $0`/recipes/$RECIPE_NAME
 
         # preparations are performed here, not inside recipes
         prepare
@@ -436,4 +443,4 @@ for D in $RECIPE_DIRS; do
     fi
 done
 
-[ "$FOUND" ] || abort "No recipe found for '$RECIPE'"
+[ "$FOUND" ] || abort "No recipe found for '$RECIPE_NAME'"
