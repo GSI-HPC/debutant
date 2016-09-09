@@ -1,0 +1,32 @@
+#
+# create a driver package for CAB A+ series label printers
+#
+
+# further information
+HOMEPAGE="https://www.cab.de/en/marking/label-printer/aplus-series/"
+
+# download tarball:
+ARCHIVE=`fetch https://www.cab.de/media/pushfile.cfm?file=1514`
+
+# unpack:
+extract $ARCHIVE
+
+VERSION=`ls -1d $BUILD_DIR/cab-CUPS-linux-x86_64* | sed -e "s/.*-\([0-9.]\+\)$/\1/"`
+
+# add version to PKG_DIR as required by dh_make
+PKG_DIR="${PKG_DIR}-${VERSION}"
+
+# rename directory
+mv $BUILD_DIR/cab-CUPS-linux-x86_64* $PKG_DIR
+
+# create initial debian files
+debut_dh_make
+
+# add our custom files
+add_debian_files
+
+# create package
+build_package
+
+# copy debs to working directory
+drop_result
