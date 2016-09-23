@@ -165,6 +165,12 @@ debut_dh_make() {
     # modify rules file to override dh_strip
     debian_rules
     add_lintian_overrides
+    # remove README file dummies:
+    rm ${PKG_DIR}/debian/README*
+    cat <<EOF > ${PKG_DIR}/debian/README.Debian
+This package was generated with debutant.
+EOF
+
 }
 
 # change an option in debian/control
