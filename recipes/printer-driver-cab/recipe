@@ -25,6 +25,9 @@ debut_dh_make
 # add our custom files
 add_debian_files
 
+debian_control Homepage $HOMEPAGE
+debian_control Section net # WUT?
+
 # create package
 build_package
 
