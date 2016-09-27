@@ -39,7 +39,7 @@ SOURCE_DIR=Unix/bin/Linux
 
 [ "$ARCH" = "amd64" ] && SOURCE_DIR=Unix/bin/Linux-x86-64
 
-for EXE in monitorlm mathinfo mathlm; do
+for EXE in monitorlm mathlm; do
     debian_install $SOURCE_DIR/$EXE /usr/sbin
 done
 
