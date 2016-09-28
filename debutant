@@ -24,7 +24,7 @@
 #
 
 abort() {
-    echo $* >&2
+    echo "$*" >&2
     exit 1
 }
 
@@ -40,11 +40,11 @@ add_dependency() {
     fi
 
     for PKG in "$@"; do
-        if grep -q "^${depends}: .*" $PKG_DIR/debian/control; then
-            grep -q "^${depends}: .*\<$PKG\>" $PKG_DIR/debian/control \
-                || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" $PKG_DIR/debian/control
+        if grep -q "^${depends}: .*" "$PKG_DIR/debian/control"; then
+            grep -q "^${depends}: .*\<$PKG\>" "$PKG_DIR/debian/control" \
+                || sed -i -e "s/^\(${depends}: .*\)/\1, $PKG/" "$PKG_DIR/debian/control"
         else
-            echo "${depends}: $PKG" >> $PKG_DIR/debian/control
+            echo "${depends}: $PKG" >> "$PKG_DIR/debian/control"
         fi
     done
 }
@@ -56,8 +56,8 @@ add_dependency() {
 add_initscript() {
     local init=$1
 
-    [ "$init" ] || init=$RECIPE_DIR/debian/init
-    cp "$init" $PKG_DIR/debian/init
+    [ "$init" ] || init="$RECIPE_DIR/debian/init"
+    cp "$init" "$PKG_DIR/debian/init"
     # also copy over the default file if found:
     if [ -e `dirname $init`/default ]; then
         cp `dirname $init`/default $PKG_DIR/debian/default
@@ -317,11 +317,8 @@ fetch() {
 
     # guess the filename from the Location: header of the HTTP response
     #  (to prevent downloaded files being called 'download' aso.
-    #filename=`curl -I $url | sed -ne "s|Location: .*/\(.*\)\(?.*\)|\1|p"`
-    # fallback:
-    #[ "$filename" ] || filename=`basename $url`
-    filename=`curl --silent --remote-name --remote-header-name -\# $url -w "%{filename_effective}"` # -o "filename" --remote-header-name
-    echo $filename
+    curl --silent --remote-name --remote-header-name -\# $url \
+         -w "%{filename_effective}"
 }
 
 
@@ -375,9 +372,9 @@ export abort add_dependency cleanup debian_control debian_rules \
 #
 
 # search path for recipes:
-RECIPE_DIRS="`dirname $0`/recipes /usr/lib/debutant/recipes"
-
 # ... /usr/local/lib/debutant/recipes??, /var/lib/debutant/recipes???
+RECIPE_DIRS="$(dirname $0)/recipes /usr/lib/debutant/recipes"
+
 REVISION=1
 
 while getopts "hlr:dp" OPTION; do
@@ -404,7 +401,7 @@ while getopts "hlr:dp" OPTION; do
     esac
 done
 
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
 RECIPE_NAME=$1
 shift
@@ -417,21 +414,21 @@ fi
 FOUND=
 
 for D in $RECIPE_DIRS; do
-    [ -d $D ] || continue
-    if [ -e $D/$RECIPE_NAME/recipe ]; then
+    [ -d "$D" ] || continue
+    if [ -e "$D/$RECIPE_NAME/recipe" ]; then
         FOUND=1
 
         set -e
         [ $DEBUG ] && set -x
 
-        RECIPE_DIR=`dirname $0`/recipes/$RECIPE_NAME
+        RECIPE_DIR="$(dirname $0)/recipes/$RECIPE_NAME"
 
         # preparations are performed here, not inside recipes
         prepare
 
         # now we have a BUILD_DIR
         # stage 1: extract and convert the archive
-        . $RECIPE_DIR/recipe $@
+        . "$RECIPE_DIR/recipe" $@
         #. $RECIPE_DIR/recipe extract 1$@
 
         # now we have a PKG_DIR and put debian/... into it:
