@@ -6,6 +6,15 @@ Packaging is done by individual 'recipes'.
 
 This software is work in progess! For now it is implemented as a bash script.
 
+# Requirements
+
+To make effective use of debutant you need to have the standard packaging toolset installed:
+
+- dh-make
+- devscripts + recommends
+- debhelper
+- dpkg-dev + recommends
+
 # Usage
 
 `./debutant` lists the available recipes.
