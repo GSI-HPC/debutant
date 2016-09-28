@@ -20,7 +20,7 @@ At first debutant creates a temporary $BUILD_DIR where all action takes place.
 
 Basic skeleton:
 ```bash
-ARCHIVE=`fetch _URL_` # downloads the blob
+ARCHIVE=`fetch _URL_` # downloads the blob to $BUILD_DIR
 
 extract $ARCHIVE      # unpack blob
 
@@ -33,14 +33,13 @@ debut_dh_make         # create debian/… for packaging
 
 build_package         # runs debuild
 
-
 # copy back results from $BUILD_DIR to the current directory
 drop_result
 ```
 
 ## Additional commands:
 
-Normal debian packaging (eg. `install`, `rules` etc.) can be put in a
+Normal debian packaging files (eg. `install`, `rules` etc.) can be put in a
 ./recipes/_foo_/debian/` folder and added with `add_debian_files`.
 
 Entries in `debian/control` may be changes with `debian_control`
