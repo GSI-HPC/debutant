@@ -19,7 +19,7 @@ case "$1" in
 
         # create a lmadmin group
         #  members of this group will be able to run lmdown etc.
-        addgroup--system lmadmin
+        addgroup --system lmadmin
         adduser root lmadmin
 
         # create a directory for the licenses:
