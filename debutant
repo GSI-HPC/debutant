@@ -59,8 +59,8 @@ add_initscript() {
     [ "$init" ] || init="$RECIPE_DIR/debian/init"
     cp "$init" "$PKG_DIR/debian/init"
     # also copy over the default file if found:
-    if [ -e `dirname $init`/default ]; then
-        cp `dirname $init`/default $PKG_DIR/debian/default
+    if [ -e "$(dirname $init)/default" ]; then
+        cp "$(dirname $init)/default" "$PKG_DIR/debian/default"
     fi
     # 'modern' initscripts make use of lsb functions:
     #add_dependency "lsb-base (>= 3.2-14)" # versioned depends not supported by add_dependency yet
@@ -69,9 +69,9 @@ add_initscript() {
 ## DEPRECATED: use add_debian_files and $RECIPE_DIR/debian instead
 add_install_scripts() {
     for file in preinst postinst prerm postrm; do
-        [ -e $RECIPE_DIR/$file ] || continue
-        cp $RECIPE_DIR/$file $PKG_DIR/debian/
-        chmod a+rx $PKG_DIR/debian/$file
+        [ -e "$RECIPE_DIR/$file" ] || continue
+        cp "$RECIPE_DIR/$file" "$PKG_DIR/debian/"
+        chmod a+rx "$PKG_DIR/debian/$file"
     done
 }
 
@@ -84,17 +84,17 @@ add_debian_files() {
         if [ "$1" ]; then
             # read package name from the command line
             PACKAGE=$1
-        elif [ -r $PKG_DIR/debian/control ]; then
+        elif [ -r "$PKG_DIR/debian/control" ]; then
             # we already have a debian/control in place (e.g. from alien)
             #  and read the package name from there:
-            PACKAGE=`sed -ne 's/^Source: //p' $PKG_DIR/debian/control`
+            PACKAGE=$(sed -ne 's/^Source: //p' "$PKG_DIR/debian/control")
         fi
     fi
 
-    if [ "$PACKAGE" -a -d $RECIPE_DIR/$PACKAGE.debian ]; then
-        cp -br $RECIPE_DIR/$PACKAGE.debian/. $PKG_DIR/debian
-    elif [ -d $RECIPE_DIR/debian ]; then
-        cp -br $RECIPE_DIR/debian/. $PKG_DIR/debian
+    if [ "$PACKAGE" -a -d "$RECIPE_DIR/$PACKAGE.debian" ]; then
+        cp -br "$RECIPE_DIR/$PACKAGE.debian/." "$PKG_DIR/debian"
+    elif [ -d "$RECIPE_DIR/debian" ]; then
+        cp -br "$RECIPE_DIR/debian/." "$PKG_DIR/debian"
     fi
 }
 
@@ -103,7 +103,7 @@ add_debian_files() {
 #
 add_lintian_overrides() {
     local package=$1
-    cat <<EOF >> $PKG_DIR/debian/$package.lintian-overrides
+    cat <<EOF >> "$PKG_DIR/debian/$package.lintian-overrides"
 ${package} binary: binary-or-shlib-defines-rpath
 ${package} binary: embedded-library
 ${package} binary: hardening-no-relro
@@ -165,7 +165,7 @@ cleanup() {
 #  TODO: add option to send -p packagename_version to dh_make
 #
 debut_dh_make() {
-    ( cd ${PKG_DIR}; echo | dh_make -s --native)
+    ( cd ${PKG_DIR}; yes | dh_make -y -s --native $@)
     # modify rules file to override dh_strip
     debian_rules
     add_lintian_overrides
@@ -338,20 +338,21 @@ list_recipes() {
 
 prepare() {
     # some preparations:
-    ME=`whoami`
-    [ "$DEBEMAIL" ]    || DEBEMAIL="$ME@"`hostname -f`
+    ME=$(whoami)
+    [ "$DEBEMAIL" ]    || DEBEMAIL="$ME@$(hostname -f)"
     [ "$DEBFULLNAME" ] ||
-        DEBFULLNAME=`getent passwd $ME | cut -f 5 -d : | cut -f 1 -d,`
+        DEBFULLNAME=$(getent passwd $ME | cut -f 5 -d : | cut -f 1 -d,)
 
-    BUILD_DIR=`mktemp -d -p .`
+    BUILD_DIR=$(mktemp -d -p .)
 
-    PKG_DIR=${BUILD_DIR}/${RECIPE_NAME}
+    PKG_DIR="${BUILD_DIR}/${RECIPE_NAME}"
+    PACKAGE=$RECIPE_NAME
 }
 
 
 usage() {
     cat <<EOF
-Usage: `basename $0` [opts] <recipe>
+Usage: $(basename $0) [opts] <recipe>
 Avalable options:
   -d:            debug output
   -l:            list available recipes
@@ -372,7 +373,7 @@ export abort add_dependency cleanup debian_control debian_rules \
 #
 
 # search path for recipes:
-# ... /usr/local/lib/debutant/recipes??, /var/lib/debutant/recipes???
+# ... /usr/local/lib/debutnt/recipes??, /var/lib/debutant/recipes???
 RECIPE_DIRS="$(dirname $0)/recipes /usr/lib/debutant/recipes"
 
 REVISION=1
@@ -428,8 +429,7 @@ for D in $RECIPE_DIRS; do
 
         # now we have a BUILD_DIR
         # stage 1: extract and convert the archive
-        . "$RECIPE_DIR/recipe" $@
-        #. $RECIPE_DIR/recipe extract 1$@
+        . "$RECIPE_DIR/recipe" "$@"
 
         # now we have a PKG_DIR and put debian/... into it:
         #dh_make ... #preseeded with recipe config?
