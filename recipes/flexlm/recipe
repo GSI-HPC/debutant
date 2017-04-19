@@ -3,56 +3,44 @@
 # recipe for building flexlm
 #
 
-# download announced to be discontinued on 2014/07/31
-
+# download discontinued after on 2014/07/31
 HOMEPAGE=http://www.globes.com/support/fnp_utilities_download.htm
-#VERSION=11.12.1.0_v6
 
-# if [ "$1" ]; then
-#     ARCH=$1
-# else
-#     ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
-# fi
-
-# case $ARCH in 
-#     i386 )
-#         URL="http://www.globes.com/products/utilities/v${VERSION}/lmgrd-i86_lsb-${VERSION}.tar.gz"
-#         ;;
-#     amd64)
-#         URL="http://www.globes.com/products/utilities/v${VERSION}/lmgrd-x64_lsb-${VERSION}.tar.gz"
-#         ;;
-# esac
-
-# wget $URL -P $BUILD_DIR
-
-ARCHIVE=$1
-
-if [ ${ARCHIVE%-*} = 'lmgrd-i86_lsb' ]; then
-    ARCH=i386
-elif [ ${ARCHIVE%-*} = 'lmgrd-x64_lsb' ]; then
-    ARCH=amd64
+if [ "$1" ]; then
+    ARCHIVE=$1
 else
-    ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+    # Let's download Intel ICS license manager package:
+    ARCHIVE=`fetch http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/9146/l_isl_server_p_2.4.013_ia32.tar.gz`
 fi
 
-VERSION=${ARCHIVE##*-}
-VERSION=${VERSION%_*}
+if [ ${ARCHIVE##*_} = 'ia32.tar.gz' ]; then
+    # 32-bit version has to be built on a 32 bit system?!
+    ARCH=i386
+elif [ ${ARCHIVE%-*} = 'intel64.tar.gz' ]; then
+    ARCH=amd64
+else
+   ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+fi
 
-PKG_DIR=$BUILD_DIR/lmgrd-$VERSION
+extract $ARCHIVE
 
-mkdir -p $PKG_DIR
+PACKAGE=lmgrd
 
-extract $ARCHIVE $PKG_DIR
+# TODO: the 32bit lmgrd cannot be executed on amd64
+# (unless lsb-core:i386 has been installed?)
+# VERSION=$($PKG_DIR/lmgrd -v | sed -e "s/lmgrd v\([0-9.]\+\) build .*/\1/")
+VERSION='11.13.1.3'
 
 ###
 
-debut_dh_make
+debut_dh_make -p ${PACKAGE}_${VERSION}
 
 debian_control Homepage $HOMEPAGE
 
 add_debian_files
 
-add_dependency lsb-core
+# (needs /lib/ld-lsb.so.3 from lsb-core)
+add_dependency lsb-core adduser lsb-base
 
 build_architecture $ARCH
 
