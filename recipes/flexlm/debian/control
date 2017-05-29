@@ -1,0 +1,21 @@
+Source: lmgrd
+Section: unknown
+Priority: extra
+Maintainer: Christopher Huhn, GSI <C.Huhn@gsi.de>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.8
+Homepage: http://www.globes.com/support/fnp_utilities_download.htm
+#Vcs-Git: git://git.debian.org/collab-maint/lmgrd.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/lmgrd.git;a=summary
+
+Package: lmgrd
+Architecture: i386
+Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-core, adduser, lsb-base
+Description: FlexLM server daemon
+ <insert long description, indented with spaces>
+
+Package: lmutil
+Architecture: i386
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: tool to manage and query FlexLM servers
+ <insert long description, indented with spaces>
