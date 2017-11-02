@@ -23,10 +23,11 @@
 
 PKG=$1
 
-# Does not work, needs manual download
-#if [ -z $PKG ]; then
-#    PKG=`fetch https://downloads.citrix.com/akdlm/8618/icaclient_13.0.0.256735_amd64.deb`
-#fi
+if [ -z $PKG ]; then
+    PKG=`fetch https://downloads.citrix.com/13680/icaclient_13.7.0.10276927_amd64.deb`
+    # test checksum:
+    echo "610ad493f910dfb49549717c29a4812b5c216270fc8b03011fc09e8d56b92448  $PKG" | sha256sum -c
+fi
 
 #extract "$ARCHIVE"
 
@@ -66,9 +67,9 @@ zcat $PKG_DIR/usr/share/doc/icaclient/changelog.gz >> $PKG_DIR/debian/changelog
 # modify the extracted debian/control:
 ( 
     #Build-depends: ia32-libs-gtk, libmotif4:i386, libspeex1, 
+    #Build-depends: libgstreamer0.10-0:i386, libxerces-c3.1:i386
     cat <<EOF 
 Source: icaclient
-Build-depends: libgstreamer0.10-0:i386, libxerces-c3.1:i386
 Maintainer: $DEBFULLNAME <$DEBEMAIL>
 
 EOF
@@ -118,6 +119,26 @@ done
 
 # move pkg install scripts out of the way for now:
 #disable_install_scripts
+
+# eula.txt has to exist in $ICAROOT
+# otherwise strange errors will occur:
+#
+# > Error: 75 (E_DYNLOAD_FAILED)
+# > Please refer to the documentation.
+# > Error: 77 (E_ENTRY_POINT_NOT_FOUND)
+# > Please refer to the documentation.
+# > Failed to load UIDialogLib:
+# > /lib/UIDialogLib.so: cannot open shared object file: No such file or directory
+# > EULA was rejected.
+#
+# as of 13.3 and later eula.txt is only available in UTF8 locales but not in en (-> C)
+
+# I don't know how to handle ru, ja, zh_HANS
+for LOCALE in en de fr es; do
+    # skip first 4 bytes to remove the byte order mark:
+    tail --bytes=+4 $PKG_DIR/opt/Citrix/ICAClient/nls/$LOCALE.UTF8/eula.txt |
+        iconv -c -f UTF-8 -t LATIN1 -o $PKG_DIR/opt/Citrix/ICAClient/nls/$LOCALE/eula.txt
+done
 
 ####
 #
