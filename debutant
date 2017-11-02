@@ -317,7 +317,7 @@ fetch() {
 
     # guess the filename from the Location: header of the HTTP response
     #  (to prevent downloaded files being called 'download' aso.
-    curl --silent --remote-name --remote-header-name -\# $url \
+    curl --silent --show-error --remote-name --remote-header-name -\# $url \
          -w "%{filename_effective}"
 }
 
