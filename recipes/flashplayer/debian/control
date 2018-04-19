@@ -1,0 +1,16 @@
+Source: adobe-flashplayer
+Section: non-free/web
+Priority: optional
+Maintainer: Christopher Huhn <C.Huhn@gsi.de>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://get.adobe.com/flashplayer/
+
+Package: adobe-flashplayer
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: flashplugin-nonfree
+Description: Adobe Flashplayer Plugin for Firefox
+ This package contains the Adobe Flashplayer
+ .
+ It was built with debutant <https://git.gsi.de/c.huhn/debutant>

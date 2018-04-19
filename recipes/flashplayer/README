@@ -1,0 +1,11 @@
+The flashplugin-nonfree package ceased to exist.
+Therefore this recipe jumps in and builds a package.
+
+It utilizes the alternative system for flash-mozilla.so
+and may co-exist with other flashplayer implementations.
+
+TODO:
+Add a privacy-optimized preconfiguration if possible.
+Test upgrading from within flash-player-properties.
+
+Skip KDE4 stuff for everything but Jessie.
