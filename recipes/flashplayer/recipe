@@ -1,0 +1,19 @@
+# -*- sh -*-
+
+VERSION=29.0.0.140
+
+TARBALL=`fetch https://fpdownload.adobe.com/get/flashplayer/pdc/${VERSION}/flash_player_npapi_linux.x86_64.tar.gz`
+
+PACKAGE=adobe-flashplayer
+
+PKG_DIR=$BUILD_DIR/$PACKAGE-$VERSION
+
+extract $TARBALL $PKG_DIR
+
+debut_dh_make
+
+add_debian_files
+
+build_package
+
+drop_result

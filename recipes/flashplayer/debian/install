@@ -1,0 +1,4 @@
+libflashplayer.so /usr/lib/adobe-flashplayer
+usr/bin           /usr
+usr/lib64/kde4    /usr/lib
+usr/share         /usr
