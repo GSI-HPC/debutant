@@ -1,0 +1,14 @@
+/var/log/lmgrd/debug.log {
+ 
+    weekly
+    rotate 52
+    compress
+
+    delaycompress
+    missingok
+    postrotate
+	/usr/sbin/invoke-rc.d lmgrd restart > /dev/null
+    endscript
+
+    create 640 lmgrd adm
+}
