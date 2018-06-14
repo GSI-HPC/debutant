@@ -124,7 +124,7 @@ build_architecture() {
 
 # add a build dependency to debian/control
 build_depends() {
-    for PKG in $@; do
+    for PKG in "$@"; do
         add_dependency -b $PKG
         # TODO: install it if required ?!
     done
@@ -134,9 +134,15 @@ build_depends() {
 #  adds a revision (default 1) unless --keep-revision is given
 build_package() {
     (
+        local version
         cd $PKG_DIR
         if [ "$1" != "--keep-revision" ]; then
-            local version=$(head -1 debian/changelog | sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
+            if [ -z $VERSION ]; then
+                version=$(head -1 debian/changelog |
+                                 sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
+            else
+                version=$VERSION
+            fi
             if [[ $version =~ '-' ]]; then
                 # change the existing revision suffix
                 version=${version//-*/-$REVISION}
@@ -144,7 +150,11 @@ build_package() {
                 # add a revision suffix
                 version=${version}-${REVISION}
             fi
-            debchange -v ${version} -D `lsb_release -cs` --force-distribution \
+            debchange='debchange'
+            [ "$PACKAGE" ] && debchange="$debchange --package $PACKAGE"
+            $debchange -v ${version} -b \
+                       -D $(lsb_release -cs) \
+                       --force-distribution \
                       "Build by debutant"
         fi
         if [ "$PBUILDER" ]; then
@@ -165,7 +175,7 @@ cleanup() {
 #  TODO: add option to send -p packagename_version to dh_make
 #
 debut_dh_make() {
-    ( cd ${PKG_DIR}; yes | dh_make -y -s --native $@)
+    ( cd ${PKG_DIR}; yes | dh_make -y -s --native "$@")
     # modify rules file to override dh_strip
     debian_rules
     add_lintian_overrides
@@ -208,18 +218,24 @@ debian_rules_add_override() {
     :
 }
 
+
 # add something to debian/install
 debian_install() {
-    if [ -e $PKG_DIR/debian/$PACKAGE.install ]; then
-        echo $@ >> $PKG_DIR/debian/$PACKAGE.install
-    else
-        echo $@ >> $PKG_DIR/debian/install
+    local pkg
+    if [ "$1" == "-p" ]; then
+        pkg=$2
+        shift 2
+    elif [ "$PACKAGE" ]; then
+        pkg=$PACKAGE
     fi
+
+    echo "$@" >> $PKG_DIR/debian/${pkg:+$pkg.}install
 }
+
 
 # add something to debian/docs
 debian_installdocs() {
-    echo $@ >> $PKG_DIR/debian/docs
+    echo "$@" >> $PKG_DIR/debian/docs
 }
 
 
@@ -239,7 +255,7 @@ disable_install_scripts() {
 # copy over the created debs:
 drop_result() {
     if [ "$1" ]; then
-        cp $@ .
+        cp "$@" .
     else
         cp $BUILD_DIR/*.deb $BUILD_DIR/*.changes $BUILD_DIR/*.build .
     fi
