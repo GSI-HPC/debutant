@@ -3,8 +3,11 @@ Upstream-Name: adobe-flashplayer
 Source: https://get.adobe.com/flashplayer/
 
 Files: *
-Copyright: 2018 Adobe Systems Incorporated
-License: 
+Copyright: 1996 - 2018 Adobe Systems Incorporated
+License:
+ All Rights Reserved. Adobe and Flash  are either trademarks or
+ registered trademarks in the United States and/or other countries.
+ .
  See /usr/share/doc/adobe-flashplayer/license.pdf.gz for the
  Software License Agreemet
 
