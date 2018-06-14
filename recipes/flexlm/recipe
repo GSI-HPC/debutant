@@ -1,4 +1,4 @@
-# -*- sh -*-
+#!/bin/bash
 #
 # recipe for building flexlm
 #
@@ -10,39 +10,56 @@ if [ "$1" ]; then
     ARCHIVE=$1
 else
     # Let's download Intel ICS license manager package:
-    ARCHIVE=`fetch http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/9146/l_isl_server_p_2.4.013_ia32.tar.gz`
+    #ARCHIVE=`fetch http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/9146/l_isl_server_p_2.4.013_ia32.tar.gz`
+    abort "Please specify an archive file"
 fi
 
-if [ ${ARCHIVE##*_} = 'ia32.tar.gz' ]; then
-    # 32-bit version has to be built on a 32 bit system?!
-    ARCH=i386
-elif [ ${ARCHIVE%-*} = 'intel64.tar.gz' ]; then
-    ARCH=amd64
-else
-   ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
-fi
+case $ARCHIVE in
+    *ia32.tar.gz|*i486.rpm)
+        # 32-bit version has to be built on a 32 bit system?!
+        ARCH=i386
+        ;;
+    *intel64.tar.gz|*x86_64.rpm)
+        ARCH=amd64
+        ;;
+    *)
+        ARCH=$(dpkg-architecture -qDEB_BUILD_ARCH)
+        ;;
+esac
 
-extract $ARCHIVE
+extract "$ARCHIVE"
+
+PKG_DIR=$BUILD_DIR/$(ls "$BUILD_DIR")
 
 PACKAGE=lmgrd
 
-# TODO: the 32bit lmgrd cannot be executed on amd64
-# (unless lsb-core:i386 has been installed?)
-# VERSION=$($PKG_DIR/lmgrd -v | sed -e "s/lmgrd v\([0-9.]\+\) build .*/\1/")
-VERSION='11.13.1.3'
+pushd "$PKG_DIR"
+LMGRD_DIR=$(dirname "$(find . -name lmgrd)")
+# find lmgrd and determine its version:
+VERSION="$("$LMGRD_DIR/lmver" "$LMGRD_DIR/lmgrd" | sed -ne 's/^FlexNet Licensing v\([0-9.]\+\) .*/\1/p')"
+popd
 
 ###
 
-debut_dh_make -p ${PACKAGE}_${VERSION}
-
-debian_control Homepage $HOMEPAGE
+if [ -d "$PKG_DIR/debian" ]; then
+    disable_install_scripts
+    # override alien-generated debian/rules:
+    debian_rules
+else
+    debut_dh_make -p "${PACKAGE}_${VERSION}"
+fi
 
 add_debian_files
+
+debian_control Homepage $HOMEPAGE
 
 # (needs /lib/ld-lsb.so.3 from lsb-core)
 add_dependency lsb-core adduser lsb-base
 
-build_architecture $ARCH
+build_architecture "$ARCH"
+
+debian_install -p lmutil "$LMGRD_DIR/lmutil usr/bin"
+debian_install -p lmgrd "$LMGRD_DIR/lmgrd usr/sbin"
 
 build_package
 
@@ -52,3 +69,7 @@ drop_result
 
 # wget http://www.globes.com/products/utilities/v11.12.1/lmutil-i86_lsb-11.12.1.0v6.tar.gz
 # add_dependency lsb-core # (needs /lib/ld-lsb.so.3)
+
+# Local Variables:
+# mode: sh
+# End:

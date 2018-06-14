@@ -1,0 +1,11 @@
+Packaging adapted to extract lmgrd and lmutil
+from Intel Compiler Suite license manager's
+'l_isl_server_p_2.6.0.003.tgz' archive.
+
+Requirements:
+
+* Download and extract archive
+* cd into archive's 'rpm' folder
+
+Then build package with
+`debutant flexlm intel-isl-2.6.0p-003.i486.rpm`
