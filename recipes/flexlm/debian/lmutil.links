@@ -1,0 +1,7 @@
+/usr/bin/lmutil /usr/bin/lmdown
+/usr/bin/lmutil /usr/bin/lmhostid
+/usr/bin/lmutil /usr/bin/lmremove
+/usr/bin/lmutil /usr/bin/lmreread
+/usr/bin/lmutil /usr/bin/lmstat
+/usr/bin/lmutil /usr/bin/lmswitchr
+/usr/bin/lmutil /usr/bin/lmver
