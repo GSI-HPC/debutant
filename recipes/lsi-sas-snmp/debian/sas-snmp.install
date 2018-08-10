@@ -1,0 +1,6 @@
+etc/lsi_mrdsnmp/lsi_mrdsnmpagent  usr/sbin
+etc/lsi_mrdsnmp/lsi_mrdsnmpmain   usr/sbin
+opt/lsi/snmp/lib/libstorelib.so.* opt/lsi/snmp/lib
+usr/lib64/libsas_objects.so.*     usr/lib/x86_64-linux-gnu
+etc/lsi_mrdsnmp/sas/sas_mib.dat               etc/lsi_mrdsnmp/sas
+etc/lsi_mrdsnmp/sas/sas_TrapDestination.conf  etc/lsi_mrdsnmp/sas

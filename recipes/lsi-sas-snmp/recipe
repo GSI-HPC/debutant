@@ -1,0 +1,53 @@
+extract $1
+
+# we assume there is exactly one entry in the $BUILD_DIR
+PKG_DIR=$(ls -1d $BUILD_DIR/*)
+
+tmp=$(basename $PKG_DIR)
+tmp=${tmp/-*}
+PACKAGE=${tmp//_/-}
+VERSION=${PKG_DIR#*-}
+
+disable_install_scripts
+
+debian_rules
+
+add_debian_files
+
+# does not work on Debian:
+#add_initscript $PKG_DIR/etc/lsi_mrdsnmp/lsi_mrdsnmpd.suse
+
+#
+# create config file required by lsi_mrdsnmpagent:
+#
+# TODO: Different content for sas-ir-snmp
+cat <<EOF > $PKG_DIR/LSI_StorSNMP.ini
+####################################
+NoOfInstalledController=1
+## Dat File Name    ###  Trap Dest. File Name##
+/etc/lsi_mrdsnmp/sas/sas_mib.dat /etc/lsi_mrdsnmp/sas/sas_TrapDestination.conf Y
+EOF
+
+debian_install LSI_StorSNMP.ini etc/lsi_mrdsnmp
+
+# the executables will look for lib*.so
+#  but the SONAME is lib*.so.i
+#  therefore ldconfig will not work as expected
+#  and we have to take care of the links by ourself:
+for lib in $PKG_DIR/opt/lsi/snmp/lib/*.so.*; do
+    libdir=$(dirname $lib | sed -e "s|^$PKG_DIR/||")
+    soname=$(objdump -p $lib | sed -ne "s/  SONAME *//p")
+    
+    # link from libstorelib.so.3.2.1 to libstorelib.so.3
+    echo $libdir/$(basename $lib) $libdir/$soname >> $PKG_DIR/debian/links
+    # link from libstorelib.so.3 to libstorelib.so
+    echo $libdir/$soname $libdir/${soname%.[0-9]} >> $PKG_DIR/debian/links    
+done
+
+# same but different for libsas_objects.so.1.56-1
+soname=$(objdump -p $PKG_DIR/usr/lib64/libsas_objects.so.* | sed -ne "s/  SONAME *//p")
+echo usr/lib/x86_64-linux-gnu/$soname usr/lib/x86_64-linux-gnu/${soname%.[0-9]}  >> $PKG_DIR/debian/links
+
+build_package --keep-revision
+
+drop_result

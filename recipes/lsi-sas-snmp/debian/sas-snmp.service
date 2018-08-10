@@ -1,0 +1,15 @@
+[Unit]
+Description=LSI SNMP Agent startup/shutdown script
+
+Requires=network.target
+Requires=snmpd.service
+
+After=network.target
+After=snmpd.service
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/lsi_mrdsnmpagent -c /etc/snmp/snmpd.conf
+
+[Install]
+WantedBy=multi-user.target
