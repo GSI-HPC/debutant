@@ -89,8 +89,8 @@ else
     fi
 fi
 
-# Fix paths
-sed -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" \
+# Fix paths and typo
+sed -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g;s/selservice/selfservice/" \
     $PKG_DIR/usr/share/menu/icaclient > $PKG_DIR/debian/menu
 
 if [ -d $PKG_DIR/usr/share/applications/ ]; then
@@ -114,6 +114,11 @@ rm -r $PKG_DIR/opt/Citrix/ICAClient/keystore/cacerts
 # more links ...
 for ini in `ls $PKG_DIR/etc/icaclient/nls/en/*.ini | xargs -n1 basename`; do
     echo /etc/icaclient/nls/current/${ini} /usr/lib/ICAClient/config/${ini} \
+         >> $PKG_DIR/debian/links
+done
+# more links ...
+for tmpl in `ls $PKG_DIR/opt/Citrix/ICAClient/nls/en/*.template | xargs -n1 basename`; do
+    echo /usr/lib/ICAClient/nls/en/${tmpl} /usr/lib/ICAClient/config/${tmpl} \
          >> $PKG_DIR/debian/links
 done
 
