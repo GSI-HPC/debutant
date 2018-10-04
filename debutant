@@ -134,25 +134,29 @@ build_depends() {
 #  adds a revision (default 1) unless --keep-revision is given
 build_package() {
     (
-        local version
+        local current_version
         cd $PKG_DIR
-        if [ "$1" != "--keep-revision" ]; then
-            if [ -z $VERSION ]; then
-                version=$(head -1 debian/changelog |
+
+        current_version=$(head -1 debian/changelog |
                                  sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
+
+        if [ "$1" != "--keep-revision" ]; then
+            if [ -z "$VERSION" ]; then
+                new_version=$current_version
             else
-                version=$VERSION
+                new_version=$VERSION
             fi
-            if [[ $version =~ '-' ]]; then
+            if [[ $current_version =~ '-' ]]; then
                 # change the existing revision suffix
-                version=${version//-*/-$REVISION}
+                new_version=${current_version//-*/-$REVISION}
             else
                 # add a revision suffix
-                version=${version}-${REVISION}
+                new_version=${current_version}-${REVISION}
             fi
+
             debchange='debchange'
             [ "$PACKAGE" ] && debchange="$debchange --package $PACKAGE"
-            $debchange -v ${version} -b \
+            $debchange -v ${new_version} -b \
                        -D $(lsb_release -cs) \
                        --force-distribution \
                       "Build by debutant"
