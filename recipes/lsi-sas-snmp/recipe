@@ -8,11 +8,18 @@ tmp=${tmp/-*}
 PACKAGE=${tmp//_/-}
 VERSION=${PKG_DIR#*-}
 
+FULL_VERSION=$(head -1 $PKG_DIR/debian/changelog |
+                      sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
+[ "$REVISION" ] || REVISION=${FULL_VERSION#*-}
+
 disable_install_scripts
 
 debian_rules
 
 add_debian_files
+
+# agent tries to sent traps via /usr/bin/snmptrap:
+add_dependency snmp
 
 # does not work on Debian:
 #add_initscript $PKG_DIR/etc/lsi_mrdsnmp/lsi_mrdsnmpd.suse
@@ -48,6 +55,6 @@ done
 soname=$(objdump -p $PKG_DIR/usr/lib64/libsas_objects.so.* | sed -ne "s/  SONAME *//p")
 echo usr/lib/x86_64-linux-gnu/$soname usr/lib/x86_64-linux-gnu/${soname%.[0-9]}  >> $PKG_DIR/debian/links
 
-build_package --keep-revision
+build_package
 
 drop_result
