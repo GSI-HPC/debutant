@@ -1,0 +1,19 @@
+Source: storcli
+Section: unknown
+Priority: optional
+Maintainer: Christopher Huhn <C.Huhn@gsi.de>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://docs.broadcom.com/docs/007.0709.0000.0000_Unified_StorCLI.zip
+#Vcs-Git: https://anonscm.debian.org/collab-maint/storcli.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/storcli.git
+
+Package: storcli
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: megacli
+Replaces: megacli
+Provides: megacli
+Description: Storage Command Line Tool, manages storage controllers
+ Command line utility for Broadcom/LSI/Avago yada yada
+ MegaRAID storage controllers

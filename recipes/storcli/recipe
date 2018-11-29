@@ -1,0 +1,56 @@
+# -*- sh -*-
+#
+#
+#
+#
+#
+
+VERSION=007.0709.0000.0000
+
+URL="https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/${VERSION}_Unified_StorCLI.zip"
+
+if [ -z "$1" ]; then
+    ARCHIVE=`fetch $URL`
+else
+    ARCHIVE=$1
+fi
+
+extract $ARCHIVE
+
+# yo dawg, I herd you like zip, so I put an zip in your zip
+#  so you can unzip while you unzip
+extract $BUILD_DIR/Unified_storcli_all_os.zip
+
+PKG_DIR="$BUILD_DIR/storcli-${VERSION}"
+
+extract "$BUILD_DIR/Unified_storcli_all_os/Ubuntu/storcli_${VERSION}_all.deb" \
+        $PKG_DIR
+
+debut_dh_make
+
+case `dpkg-architecture -qDEB_BUILD_ARCH` in
+    amd64)
+        # TODO: Rename to storcli instead of linking?
+        debian_install opt/MegaRAID/storcli/storcli64 usr/sbin
+        echo "/usr/sbin/storcli64 /usr/sbin/storcli" >> $PKG_DIR/debian/links
+        ;;
+    i386)
+        debian_install opt/MegaRAID/storcli/storcli usr/sbin
+        ;;
+esac
+
+# storcli supercedes megacli and is backwards compatible:
+
+cat <<EOF >> $PKG_DIR/debian/links
+/usr/sbin/storcli /usr/sbin/MegaCli64
+EOF
+
+# add the readme
+cp "$BUILD_DIR/${VERSION}_Unified_StorCLI.txt" $PKG_DIR
+echo "${VERSION}_Unified_StorCLI.txt" >> $PKG_DIR/debian/docs
+
+add_debian_files
+
+build_package
+
+drop_result
