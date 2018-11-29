@@ -1,5 +1,5 @@
 Source: storcli
-Section: unknown
+Section: admin
 Priority: optional
 Maintainer: Christopher Huhn <C.Huhn@gsi.de>
 Build-Depends: debhelper (>= 9)
