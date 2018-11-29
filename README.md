@@ -36,6 +36,8 @@ extract $ARCHIVE      # unpack blob
 # this dir will be used in the nect steps:
 PKG_DIR=_dir where $ARCHIVE was extracted to_
 
+# shorthand: PKG_DIR=`extract $ARCHIVE`
+
 debut_dh_make         # create debian/… for packaging
 
 # packaging refinements ...
@@ -49,7 +51,7 @@ drop_result
 ## Additional commands:
 
 Normal debian packaging files (eg. `install`, `rules` etc.) can be put in a
-./recipes/_foo_/debian/` folder and added with `add_debian_files`.
+`./recipes/_foo_/debian/` folder and added with `add_debian_files`.
 
 Entries in `debian/control` may be changes with `debian_control`
 
