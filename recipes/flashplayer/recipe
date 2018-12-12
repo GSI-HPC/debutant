@@ -1,8 +1,17 @@
 #!/bin/bash
 
-VERSION=30.0.0.113
+#VERSION=32.0.0.101
+UA='Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0'
 
-TARBALL=$(fetch https://fpdownload.adobe.com/get/flashplayer/pdc/${VERSION}/flash_player_npapi_linux.x86_64.tar.gz)
+# get version info from website:
+VERSION=$(
+    curl -A "$UA" https://get.adobe.com/flashplayer/ |
+        xmllint --html \
+                --xpath "//*[@id='AUTO_ID_columnleft_p_version']//text()" - |
+        sed -e "s/Version //"
+       )
+
+TARBALL=$(fetch "https://fpdownload.adobe.com/get/flashplayer/pdc/${VERSION}/flash_player_npapi_linux.x86_64.tar.gz")
 
 PACKAGE=adobe-flashplayer
 
