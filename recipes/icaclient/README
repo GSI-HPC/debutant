@@ -1,0 +1,13 @@
+# Citrix receiver repackaging
+
+Download Citriy Receiver .deb package from 
+[https://www.citrix.com/downloads/citrix-receiver/linux/receiver-for-linux-latest.html]:
+> Debian Packages 
+>   → Full Packages (Self-Service Support) 
+>   → Receiver for Linux (x86_64)
+
+## Why repackaing?
+
+* Don't install to /opt/Citrix/ICAClient but /usr/lib/ICAClient
+* Use system-wide /etc/ssl/certs from ca-certificates as the certificate store
+* Put config in /etc/icaclient
