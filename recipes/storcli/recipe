@@ -1,15 +1,17 @@
 # -*- sh -*-
 #
-#
+# storcli - CLI to LSI/Broadcom MegaRAID controllers
 #
 #
 #
 
-VERSION=007.0709.0000.0000
-
-URL="https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/${VERSION}_Unified_StorCLI.zip"
+VERSION=007.0916.0000.0000
 
 if [ -z "$1" ]; then
+    # download does not work atm.
+    echo "You have to download storcli manually for now" >&1
+    exit 1
+    URL="https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/${VERSION}_Unified_StorCLI.zip"
     ARCHIVE=`fetch $URL`
 else
     ARCHIVE=$1
@@ -19,7 +21,7 @@ extract $ARCHIVE
 
 # yo dawg, I herd you like zip, so I put an zip in your zip
 #  so you can unzip while you unzip
-extract $BUILD_DIR/Unified_storcli_all_os.zip
+#extract $BUILD_DIR/Unified_storcli_all_os.zip
 
 PKG_DIR="$BUILD_DIR/storcli-${VERSION}"
 
@@ -46,8 +48,8 @@ cat <<EOF >> $PKG_DIR/debian/links
 EOF
 
 # add the readme
-cp "$BUILD_DIR/${VERSION}_Unified_StorCLI.txt" $PKG_DIR
-echo "${VERSION}_Unified_StorCLI.txt" >> $PKG_DIR/debian/docs
+#cp "$BUILD_DIR/${VERSION}_Unified_StorCLI.txt" $PKG_DIR
+#echo "${VERSION}_Unified_StorCLI.txt" >> $PKG_DIR/debian/docs
 
 add_debian_files
 
