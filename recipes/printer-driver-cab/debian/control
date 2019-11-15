@@ -1,0 +1,14 @@
+Source: printer-driver-cab
+Section: graphics
+Priority: optional
+Maintainer: Christopher Huhn <C.Huhn@gsi.de>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://www.cab.de/en/marking/label-printer/aplus-series/
+
+Package: printer-driver-cab
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Cups driver for cab A+ label printers
+ This package contains the PPDs and cups filter 'rastertocab'
+ for cab A+ label printers
