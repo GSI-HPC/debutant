@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# small recipe to download and rename zoom package
+#
+
+(
+    cd "$BUILD_DIR" || exit
+
+    PKG=$(fetch "https://zoom.us/client/latest/zoom_amd64.deb")
+
+    # package name is zoom, but just to be sure:
+    PKG_NAME=$(dpkg-deb -I "$PKG" | sed -ne "s/ Package: //p")
+    VERSION=$(dpkg-deb -I "$PKG" | sed -ne "s/ Version: //p")
+
+    # debarchiver requires deb files to follow the Debian naming conventions:
+    CANONICAL_PACKAGE_NAME="${PKG_NAME}_${VERSION}_amd64.deb"
+
+    mv "$PKG" "$CANONICAL_PACKAGE_NAME"
+
+    # for the lols:
+    if [ "$DEBUG" ]; then
+        lintian --no-tag-display-limit "$CANONICAL_PACKAGE_NAME" || true
+    fi
+
+    dpkg-sig --verify "$CANONICAL_PACKAGE_NAME"
+)
+
+drop_result
