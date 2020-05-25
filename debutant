@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 #    debutant - Debian packaging framework for binary blobs
-#    Copyright (C) 2015 - 2016 Christopher Huhn, GSI <c.huhn@gsi.de>
+#    Copyright (C) 2015 - 2020  GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+#    Author: Christopher Huhn <c.huhn@gsi.de>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -195,6 +196,7 @@ EOF
 debian_control()  {
     local key=$1
     local value="$2"
+
     sed -i -e "s|^\($key:\) .*|\1 $value|" ${PKG_DIR}/debian/control
 }
 
@@ -259,9 +261,11 @@ disable_install_scripts() {
 # copy over the created debs:
 drop_result() {
     if [ "$1" ]; then
-        cp "$@" .
+        cp -v "$@" .
     else
-        cp $BUILD_DIR/*.deb $BUILD_DIR/*.changes $BUILD_DIR/*.build .
+        find  "$BUILD_DIR" -maxdepth 1 \
+              -\( -name \*.deb -o -name \*.changes -o -name \*.build -\) \
+              -exec cp -v {} . \;
     fi
 }
 
@@ -337,8 +341,8 @@ fetch() {
 
     # guess the filename from the Location: header of the HTTP response
     #  (to prevent downloaded files being called 'download' aso.
-    curl --silent --show-error --remote-name --remote-header-name -\# $url \
-         -w "%{filename_effective}"
+    curl --silent --show-error --location --remote-name --remote-header-name \
+         -\# $url -w "%{filename_effective}"
 }
 
 
