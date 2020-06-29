@@ -1,0 +1,25 @@
+#
+#
+#
+
+if [ "$1" ]; then
+    ARCHIVE=$1
+else
+     ARCHIVE=$(fetch "https://download.oracle.com/otn_software/linux/instantclient/oracle-instantclient-basic-linuxx64.rpm")
+fi
+
+PACKAGE=$(LANG=C rpm -qp --queryformat '%{NAME}' "$ARCHIVE")
+VERSION=$(LANG=C rpm -qp --queryformat '%{VERSION}' "$ARCHIVE")
+
+extract "$ARCHIVE"
+
+PKG_DIR=$(find "$BUILD_DIR" -type d -name 'oracle-instantclient*')
+
+# https://lintian.debian.org/tags/maintscript-calls-ldconfig.html :
+disable_install_scripts
+
+echo "activate-noawait ldconfig" > "$PKG_DIR/$PACKAGE.triggers"
+
+build_package
+
+drop_result
