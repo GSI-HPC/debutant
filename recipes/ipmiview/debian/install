@@ -1,0 +1,5 @@
+iKVM.jar        /usr/share/ipmiview
+IPMIView20.jar  /usr/share/ipmiview
+TrapView.jar    /usr/share/ipmiview
+JViewerX9.jar   /usr/share/ipmiview
+ipmiview        /usr/bin

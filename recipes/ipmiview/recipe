@@ -1,0 +1,33 @@
+# -*- sh -*-
+
+extract $1
+
+PKG_DIR="$BUILD_DIR/$(ls $BUILD_DIR)"
+
+PACKAGE=$(cut -f1 -d_ <<<$1 | tr 'A-Z' 'a-z')
+VERSION=$(cut -f2 -d_ <<<$1)
+
+debut_dh_make -p "${PACKAGE}_${VERSION}"
+
+add_debian_files
+
+debian_control Homepage https://www.supermicro.com/en/solutions/management-software/ipmi-utilities
+debian_control Section non-free/admin
+
+add_dependency "java-runtime (>= 8) | default-jre (>=8)"
+
+mkdir -p $PKG_DIR/debian/$PACKAGE/usr/bin
+
+# add a wrapper script:
+cat <<EOF > $PKG_DIR/ipmiview
+#!/bin/sh
+
+# turn off globbing:
+set -f
+
+exec java -cp /usr/share/ipmiview/* IPMIView20.IPMIView20
+EOF
+
+build_package
+
+drop_result
