@@ -1,60 +1,99 @@
-extract $1
+# -*- sh -*-
 
-# we assume there is exactly one entry in the $BUILD_DIR
-PKG_DIR=$(ls -1d $BUILD_DIR/*)
+downcase() {
+    tr '[:upper:]' '[:lower:]' <<<"$@"
+}
 
-tmp=$(basename $PKG_DIR)
-tmp=${tmp/-*}
-PACKAGE=${tmp//_/-}
-VERSION=${PKG_DIR#*-}
+# Archive contains zip archives for every platform
+extract "$1"
 
-FULL_VERSION=$(head -1 $PKG_DIR/debian/changelog |
-                      sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
-[ "$REVISION" ] || REVISION=${FULL_VERSION#*-}
+for ARCHIVE_PREFIX in SAS_IR_SNMP SAS_SNMP; do
 
-disable_install_scripts
+    STAGE2=$BUILD_DIR/$ARCHIVE_PREFIX.stage2
 
-debian_rules
+    # extract the linux amd64 archive, contains another zip archive …
+    extract "$BUILD_DIR/${ARCHIVE_PREFIX}_Linux_x64_Installer.zip" \
+            "$STAGE2"
 
-add_debian_files
+    # check md5sum, MD5Checksum.txt comes in a non-standard format
+    (
+        cd "$STAGE2"
+        sed -e 's|.*: \(.*\)/\(.*\)|\1  \2|' MD5Checksum.txt |
+            md5sum --check --strict
+    )
 
-# agent tries to sent traps via /usr/bin/snmptrap:
-add_dependency snmp
+    STAGE3=$BUILD_DIR/$ARCHIVE_PREFIX.stage3
 
-# does not work on Debian:
-#add_initscript $PKG_DIR/etc/lsi_mrdsnmp/lsi_mrdsnmpd.suse
+    # extract zip archive, contains tar archive …
+    extract "$STAGE2/${ARCHIVE_PREFIX}"_Linux_x64_Installer-*.zip "$STAGE3"
 
-#
-# create config file required by lsi_mrdsnmpagent:
-#
-# TODO: Different content for sas-ir-snmp
-cat <<EOF > $PKG_DIR/LSI_StorSNMP.ini
+    STAGE4=$BUILD_DIR/$ARCHIVE_PREFIX.stage4
+    # extract tar archive, finally contains RPM package …
+    extract "$STAGE3/$(downcase $ARCHIVE_PREFIX)_64bit.tar.gz" "$STAGE4"
+
+    RPM_PACKAGE=$STAGE4/$(downcase $ARCHIVE_PREFIX)-*.x86_64.rpm
+    RPM_PACKAGE_NAME=$(LANG=C rpm -qp --queryformat '%{NAME}' "$RPM_PACKAGE")
+
+    PACKAGE=$(tr '_' '-' <<<$RPM_PACKAGE_NAME)
+
+    VERSION=$(LANG=C rpm -qp --queryformat '%{VERSION}' "$RPM_PACKAGE")
+
+    # extract the RMP package (to sas_(ir_)?snmp-$VERSION)
+    extract $RPM_PACKAGE
+
+    PKG_DIR="${BUILD_DIR}/${RPM_PACKAGE_NAME}-${VERSION}"
+
+    FULL_VERSION=$(head -1 $PKG_DIR/debian/changelog |
+                       sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
+
+    if [ "$REVISION" -eq 1 ]; then
+        REVISION=${FULL_VERSION#*-}
+    fi
+
+    disable_install_scripts
+
+    debian_rules
+
+    add_debian_files
+
+    # agent tries to sent traps via /usr/bin/snmptrap:
+    add_dependency snmp
+
+    # does not work on Debian:
+    #add_initscript $PKG_DIR/etc/lsi_mrdsnmp/lsi_mrdsnmpd.suse
+
+    #
+    # create config file required by lsi_mrdsnmpagent:
+    #
+    # TODO: Different content for sas-ir-snmp
+    cat <<EOF > $PKG_DIR/LSI_StorSNMP.ini
 ####################################
-NoOfInstalledController=1
-## Dat File Name    ###  Trap Dest. File Name##
-/etc/lsi_mrdsnmp/sas/sas_mib.dat /etc/lsi_mrdsnmp/sas/sas_TrapDestination.conf Y
+NoOfInstalledC  ontroller=1
+## Dat File Name        ###  Trap Dest. File Name##
+/etc/lsi_mrdsnmp/sas    /sas_mib.dat /etc/lsi_mrdsnmp/sas/sas_TrapDestination.conf Y
 EOF
 
-debian_install LSI_StorSNMP.ini etc/lsi_mrdsnmp
+    debian_install LSI_StorSNMP.ini etc/lsi_mrdsnmp
 
-# the executables will look for lib*.so
-#  but the SONAME is lib*.so.i
-#  therefore ldconfig will not work as expected
-#  and we have to take care of the links by ourself:
-for lib in $PKG_DIR/opt/lsi/snmp/lib/*.so.*; do
-    libdir=$(dirname $lib | sed -e "s|^$PKG_DIR/||")
-    soname=$(objdump -p $lib | sed -ne "s/  SONAME *//p")
-    
-    # link from libstorelib.so.3.2.1 to libstorelib.so.3
-    echo $libdir/$(basename $lib) $libdir/$soname >> $PKG_DIR/debian/links
-    # link from libstorelib.so.3 to libstorelib.so
-    echo $libdir/$soname $libdir/${soname%.[0-9]} >> $PKG_DIR/debian/links    
+    # the executables will look for lib*.so
+    #  but the SONAME is lib*.so.i
+    #  therefore ldconfig will not work as expected
+    #  and we have to take care of the links by ourself:
+    for lib in $PKG_DIR/opt/lsi/snmp/lib/*.so.*; do
+        libdir=$(dirname $lib | sed -e "s|^$PKG_DIR/||")
+        soname=$(objdump -p $lib | sed -ne "s/  SONAME *//p")
+
+        # link from libstorelib.so.3.2.1 to libstorelib.so.3
+        echo $libdir/$(basename $lib) $libdir/$soname >> $PKG_DIR/debian/links
+        # link from libstorelib.so.3 to libstorelib.so
+        echo $libdir/$soname $libdir/${soname%.[0-9]} >> $PKG_DIR/debian/links
+    done
+
+    # same but different for libsas_(ir_)?objects.so.1.56-1
+    soname=$(objdump -p "$PKG_DIR"/usr/lib64/libsas_*objects.so.* | sed -ne "s/  SONAME *//p")
+    echo "usr/lib/x86_64-linux-gnu/$soname usr/lib/x86_64-linux-gnu/${soname%.[0-9]}" >> "$PKG_DIR/debian/links"
+
+    build_package
+
+    drop_result
 done
-
-# same but different for libsas_objects.so.1.56-1
-soname=$(objdump -p $PKG_DIR/usr/lib64/libsas_objects.so.* | sed -ne "s/  SONAME *//p")
-echo usr/lib/x86_64-linux-gnu/$soname usr/lib/x86_64-linux-gnu/${soname%.[0-9]}  >> $PKG_DIR/debian/links
-
-build_package
-
-drop_result
