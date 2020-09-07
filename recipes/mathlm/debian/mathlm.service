@@ -1,0 +1,14 @@
+[Unit]
+Description=Wolfram Mathematica License Manager MathLM
+After=network.target
+
+[Service]
+User=mathlm
+Group=mathlm
+EnvironmentFile=-/etc/default/mathlm
+ExecStart=/usr/sbin/mathlm -foreground $DAEMON_ARGS -pwfile ${MATHPASS}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+Alias=mathlm.service

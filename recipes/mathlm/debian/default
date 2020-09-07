@@ -4,7 +4,7 @@
 #
 
 # these cmdline args are passed to mathlm:
-DAEMON_ARGS="-syslog -timeout $((24*7)) -loglevel 2"
+DAEMON_ARGS="-syslog -timeout 168 -loglevel 2"
 
 # this is where the mathpass file is located:
 MATHPASS=/etc/mathlm/mathpass
