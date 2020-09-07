@@ -7,7 +7,7 @@
 
 ARCHIVE=$1
 
-[ $ARCHIVE ] || abort Need an archive to extract mathlm
+[ $ARCHIVE ] || abort "Need an archive to extract mathlm"
 
 if [ "$2" ]; then
     ARCH=$2
@@ -21,12 +21,12 @@ extract $ARCHIVE
 INSTALLER=`find $BUILD_DIR -name '*.sh'`
 
 PACKAGE=mathlm
-VERSION=`basename $ARCHIVE | cut -d_ -f2`
+VERSION=$(sed -ne 's/label="\(Wolfram \)\?MathLM \([0-9.]\+\) for UNIX Installer Archive"/\2/p' "$INSTALLER")
 
 PKG_DIR=$BUILD_DIR/${PACKAGE}-${VERSION}
 
 # the extract subdir must not exist
-yes e | sh -x $INSTALLER --nox11 --target $PKG_DIR --keep
+yes e | sh $INSTALLER --nox11 --target $PKG_DIR --keep || true
 
 debut_dh_make
 
