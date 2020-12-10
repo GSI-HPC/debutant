@@ -5,7 +5,7 @@ set -e
 ldconfig
 
 GROUP=tsm
-DSMTCA=/usr/lib/tsm/client/api/bin64/dsmtca
+# DSMTCA=/usr/lib/tsm/client/api/bin64/dsmtca
 LOGDIR=/var/log/tsm
 
 if [ "$1" = configure ]; then
@@ -13,8 +13,8 @@ if [ "$1" = configure ]; then
         addgroup --system --quiet $GROUP
     fi
 
-    chgrp $GROUP $DSMTCA
-    chmod 4754   $DSMTCA
+    # chgrp $GROUP $DSMTCA
+    # chmod 4754   $DSMTCA
 
     chgrp $GROUP $LOGDIR
     chmod g+w    $LOGDIR
