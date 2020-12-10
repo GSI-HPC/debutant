@@ -299,6 +299,10 @@ extract() {
             esac
             ;;
 
+       application/x-tar)
+            tar xf "$blob" -C "$dir"
+            ;;
+
         application/zip)
             unzip -d $dir $blob
             ;;
