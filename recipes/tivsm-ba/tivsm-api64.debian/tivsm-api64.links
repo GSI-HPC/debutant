@@ -5,4 +5,3 @@ usr/lib/tsm/client/api/bin64/libdmapi.so    usr/lib/x86_64-linux-gnu/libdmapi.so
 usr/lib/tsm/client/api/bin64/libApiTSM64.so               usr/lib/x86_64-linux-gnu/libApiTSM64.so 
 usr/lib/tsm/client/api/bin64/libtsmxerces-c.so.28.0       usr/lib/x86_64-linux-gnu/libtsmxerces-c.so.28
 usr/lib/tsm/client/api/bin64/libtsmxerces-depdom.so.28.0  usr/lib/x86_64-linux-gnu/libtsmxerces-depdom.so.28
-usr/lib/tsm/client/api/bin64/libxmlutil-7.1.4.0.so        usr/lib/x86_64-linux-gnu/libxmlutil-7.1.4.0.so
