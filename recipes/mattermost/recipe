@@ -1,0 +1,59 @@
+# -*- sh -*-
+
+# VERSION="5.29.1"
+# CHECKSUM="220a3ca032d288a01c62bf4074d20c854f63c2837b27da47ab1ad0e70e616221"
+EDITION="team"
+
+while :; do
+    case "$1" in
+        --archive)
+            ARCHIVE="$2"
+            ;;
+        --version)
+            VERSION="$2"
+            ;;
+        --checksum)
+            CHECKSUM="$2"
+            ;;
+        --edition)
+            EDITION="$2"
+            ;;
+        *)
+            break
+    esac
+    shift 2
+done
+
+if [ -z "$ARCHIVE" ]; then
+    if [ "$EDITION" = "team" ]; then
+        TAR_FILE="mattermost-$EDITION-$VERSION-linux-amd64.tar.gz"
+    else
+        TAR_FILE="mattermost-$VERSION-linux-amd64.tar.gz"
+    fi
+    URL="https://releases.mattermost.com/$VERSION/$TAR_FILE"
+    ARCHIVE="$(fetch "$URL")"
+fi
+
+if [ "$CHECKSUM" ]; then
+    check_sha256sum "$ARCHIVE" "$CHECKSUM"
+fi
+
+# TODO: also check the GPG signature of the ARCHIVE
+
+extract "$ARCHIVE"
+
+PKG_DIR="$BUILD_DIR/mattermost"
+
+# fix the log file location in config.json in-place:
+jq '.LogSettings.FileLocation="/var/log/mattermost/mattermost.log"' \
+   "$PKG_DIR/config/config.json" | sponge "$PKG_DIR/config/config.json"
+
+find "$PKG_DIR/client" -type f -exec chmod -c a-x {} \;
+
+debut_dh_make -p "mattermost-server_$VERSION"
+
+add_debian_files
+
+build_package
+
+drop_result

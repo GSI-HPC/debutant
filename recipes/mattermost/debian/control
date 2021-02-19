@@ -1,0 +1,24 @@
+Source: mattermost
+Section: non-free/web
+Priority: optional
+Maintainer: Christopher Huhn <C.Huhn@gsi.de>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 4.1.4
+Homepage: https://github.com/mattermost/mattermost-server
+# Vcs-Browser: https://salsa.debian.org/go-team/packages/mattermost-server
+# Vcs-Git: https://salsa.debian.org/go-team/packages/mattermost-server.git
+
+Package: mattermost-server
+Architecture: amd64
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+    ,adduser
+Description: self-hosted team communication service
+ Mattermost is a self-hosted team communication service bringing messaging
+ and file sharing into one place, accessible across PCs and phones, with
+ archiving and search.
+ .
+ Mattermost is an open source, self-hosted Slack-alternative. It's features
+ rival Slack features, it's compatible with existing Slack integrations,
+ and one can even import users and channel history from existing Slack
+ teams.

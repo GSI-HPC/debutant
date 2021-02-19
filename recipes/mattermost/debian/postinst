@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+case $1 in
+    configure)
+        if ! getent passwd mattermost > /dev/null 2>&1 ; then
+            adduser --system --group --disabled-login --disabled-password \
+                    --home /var/lib/mattermost/ mattermost
+        fi
+        chmod u=rwX,go=rX /var/lib/mattermost/
+        chown mattermost:mattermost /etc/mattermost/config.json \
+              /var/log/mattermost
+    ;;
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#

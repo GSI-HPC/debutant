@@ -1,0 +1,8 @@
+bin                  usr/share/mattermost
+config/config.json   etc/mattermost
+client               usr/share/mattermost
+fonts                usr/share/mattermost
+i18n                 usr/share/mattermost
+logs                 var/log/mattermost
+prepackaged_plugins  usr/share/mattermost
+templates            usr/share/mattermost

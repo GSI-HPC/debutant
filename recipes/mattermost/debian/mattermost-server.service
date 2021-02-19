@@ -1,0 +1,20 @@
+[Unit]
+Description=Mattermost
+Documentation=https://docs.mattermost.com/guides/administrator.html
+After=network.target postgresql.service mysql.service
+
+[Service]
+Type=notify
+ExecStart=/usr/share/mattermost/bin/mattermost --config /etc/mattermost/config.json
+WorkingDirectory=/usr/share/mattermost
+User=mattermost
+Group=mattermost
+LimitNOFILE=49152
+PrivateTmp=true
+Restart=always
+TimeoutStartSec=300
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+Alias=mattermost.service

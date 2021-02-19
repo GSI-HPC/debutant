@@ -1,0 +1,7 @@
+The packaging files in this directory are based on the files for the
+(prospective( official mattermost-server package for Debian,
+created by Dmitry Smirnov:
+
+Copyright: 2018 Dmitry Smirnov <onlyjob@debian.org>
+License: GPL-3+ or Apache-2.0 or Expat
+Homepage: https://salsa.debian.org/go-team/packages/mattermost-server
