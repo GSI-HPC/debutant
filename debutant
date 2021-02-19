@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #    debutant - Debian packaging framework for binary blobs
-#    Copyright (C) 2015 - 2020  GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+#    Copyright (C) 2015 - 2021  GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
 #    Author: Christopher Huhn <c.huhn@gsi.de>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -168,6 +168,14 @@ build_package() {
             debuild -b -us -uc -a${DEB_HOST_ARCH}
         fi
     )
+}
+
+#
+# test ths SHA256 sum of a file
+#  OK: rc 0
+#  Not OK or error: rc 1
+check_sha256sum() {
+    sha256sum -c <<<"$2  $1"
 }
 
 cleanup() {
@@ -406,31 +414,33 @@ RECIPE_DIRS="$(dirname $0)/recipes /usr/lib/debutant/recipes"
 
 REVISION=1
 
-while getopts "hlr:dp" OPTION; do
-    case $OPTION in
-        d)
+while : ; do
+    case $1 in
+        -d|--debug)
             DEBUG=1
             ;;
-        h)
+        -h|--help)
             usage
             exit 0
             ;;
-        l)
+        -l|--list)
             list_recipes
             exit 0
             ;;
-        r)
-            REVISION=$OPTARG
+        -r|--revision)
+            REVISION=$2
+            shift
             ;;
-        p)
+        -p|--pbuilder)
             PBUILDER=1
             ;;
         *)
+            break
             ;;
     esac
-done
 
-shift $((OPTIND - 1))
+    shift
+done
 
 RECIPE_NAME=$1
 shift
