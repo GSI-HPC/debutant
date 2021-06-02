@@ -45,7 +45,7 @@ extract "$ARCHIVE"
 PKG_DIR="$BUILD_DIR/mattermost"
 
 # fix the log file location in config.json in-place:
-jq '.LogSettings.FileLocation="/var/log/mattermost/mattermost.log"' \
+jq '.LogSettings.FileLocation="/var/log/mattermost/"' \
    "$PKG_DIR/config/config.json" | sponge "$PKG_DIR/config/config.json"
 
 find "$PKG_DIR/client" -type f -exec chmod -c a-x {} \;
