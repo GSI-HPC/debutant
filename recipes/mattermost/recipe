@@ -1,8 +1,26 @@
-# -*- sh -*-
+#!/bin/bash
+#
+# Copyright 2021 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+#
+# Author:
+#   Christopher Huhn <c.huhn@gsi.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
 
-# VERSION="5.29.1"
-# CHECKSUM="220a3ca032d288a01c62bf4074d20c854f63c2837b27da47ab1ad0e70e616221"
 EDITION="team"
+VERSION="5.31.5"
 
 while :; do
     case "$1" in
@@ -24,13 +42,22 @@ while :; do
     shift 2
 done
 
+get_checksum() {
+    local EDITION=$1
+    local VERSION=$2
+    "$RECIPE_DIR/mm_versions" | jq -r ".$EDITION[\"$VERSION\"].checksum"
+}
+
+get_url() {
+    local EDITION=$1
+    local VERSION=$2
+    "$RECIPE_DIR/mm_versions" | jq -r ".$EDITION[\"$VERSION\"].url"
+}
+
+[ "$CHECKSUM" ] || CHECKSUM=$(get_checksum "$EDITION" "$VERSION")
+
 if [ -z "$ARCHIVE" ]; then
-    if [ "$EDITION" = "team" ]; then
-        TAR_FILE="mattermost-$EDITION-$VERSION-linux-amd64.tar.gz"
-    else
-        TAR_FILE="mattermost-$VERSION-linux-amd64.tar.gz"
-    fi
-    URL="https://releases.mattermost.com/$VERSION/$TAR_FILE"
+    URL=$(get_url "$EDITION" "$VERSION")
     ARCHIVE="$(fetch "$URL")"
 fi
 
