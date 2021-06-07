@@ -1,0 +1,48 @@
+#!/usr/bin/ruby
+#
+# Copyright 2021 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+#
+# Author:
+#   Christopher Huhn <c.huhn@gsi.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+#
+# reads the list of available mattermost versions from github
+#  and converts it to JSON
+#
+
+require 'json'
+require 'net/http'
+
+version_list = 'https://raw.githubusercontent.com/mattermost/docs/master'\
+                 '/source/administration/version-archive.rst'
+
+data = Net::HTTP.get(URI(version_list))
+
+versions = {}
+
+scan_regex = %r{Mattermost (Team|Enterprise) Edition v(\d+\.\d+\.\d+).*?\n  - ``(https://releases\.mattermost\.com/.*?\.tar\.gz)``\n  - SHA-256 Checksum: ``([0-9a-f]+)}m
+
+data.scan(scan_regex).each do |flavor, version, url, checksum|
+  flavor.downcase!
+  versions[flavor] ||= {}
+  versions[flavor][version] = {
+    url: url,
+    checksum: checksum
+  }
+end
+
+puts versions.to_json
