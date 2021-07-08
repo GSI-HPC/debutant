@@ -2,10 +2,6 @@
 #
 # storcli - CLI to LSI/Broadcom MegaRAID controllers
 #
-#
-#
-
-VERSION=007.0916.0000.0000
 
 if [ -z "$1" ]; then
     # download does not work atm.
@@ -23,10 +19,14 @@ extract $ARCHIVE
 #  so you can unzip while you unzip
 #extract $BUILD_DIR/Unified_storcli_all_os.zip
 
+VERSION=$(dpkg-deb -I $BUILD_DIR/Unified_storcli_all_os/Ubuntu/storcli_*_all.deb | sed -ne 's/ Version: //p')
+
 PKG_DIR="$BUILD_DIR/storcli-${VERSION}"
 
 extract "$BUILD_DIR/Unified_storcli_all_os/Ubuntu/storcli_${VERSION}_all.deb" \
         $PKG_DIR
+
+cp -v "$BUILD_DIR/Unified_storcli_all_os/"*.pdf "$BUILD_DIR/Unified_storcli_all_os/"*.ini "$BUILD_DIR/Unified_storcli_all_os/"*.txt $PKG_DIR
 
 debut_dh_make
 
@@ -41,7 +41,7 @@ case `dpkg-architecture -qDEB_BUILD_ARCH` in
         ;;
 esac
 
-# storcli supercedes megacli and is backwards compatible:
+# storcli supersedes megacli and is backwards compatible:
 
 cat <<EOF >> $PKG_DIR/debian/links
 /usr/sbin/storcli /usr/sbin/MegaCli64
