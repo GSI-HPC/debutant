@@ -28,21 +28,26 @@ require 'json'
 require 'net/http'
 
 version_list = 'https://raw.githubusercontent.com/mattermost/docs/master'\
-                 '/source/administration/version-archive.rst'
+               '/source/upgrade/version-archive.rst'
 
 data = Net::HTTP.get(URI(version_list))
 
+# STDERR.puts data
+
 versions = {}
 
-scan_regex = %r{Mattermost (Team|Enterprise) Edition v(\d+\.\d+\.\d+).*?\n  - ``(https://releases\.mattermost\.com/.*?\.tar\.gz)``\n  - SHA-256 Checksum: ``([0-9a-f]+)}m
+scan_regex = %r{Mattermost (Team|Enterprise) Edition v(\d+\.\d+\.\d+).*?\n  - ``(https://releases\.mattermost\.com/.*?\.tar\.gz)``\n  - SHA-256 Checksum: ``([0-9a-f]+)``}m
 
 data.scan(scan_regex).each do |flavor, version, url, checksum|
   flavor.downcase!
-  versions[flavor] ||= {}
-  versions[flavor][version] = {
-    url: url,
-    checksum: checksum
-  }
+  versions[flavor] ||= []
+  versions[flavor].push(
+    {
+      version: version,
+      url: url,
+      checksum: checksum
+    }
+  )
 end
 
 puts versions.to_json

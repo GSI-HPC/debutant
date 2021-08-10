@@ -20,7 +20,7 @@
 #
 
 EDITION="team"
-VERSION="5.31.5"
+VERSION="5.31"
 
 while :; do
     case "$1" in
@@ -42,24 +42,51 @@ while :; do
     shift 2
 done
 
+MM_VERSIONS=$(mktemp)
+
+"$RECIPE_DIR/mm_versions" > "$MM_VERSIONS"
+
+# turn a version prefix (M, M., M.m, M.m., M.m.p) into the highest matching full version major.minor.point
+get_version() {
+    local EDITION=$1
+    local VERSION_PREFIX=$2
+    # TODO: query assumes that the version list is sorted in descending order
+
+    if ! expr "$VERSION_PREFIX" : '[0-9]\+\.[0-9]\+\.[0-9]\+' > /dev/null; then
+        # if $VERSION is not a full version (M.m.p 
+        VERSION_PREFIX="${VERSION_PREFIX%.}."
+    fi
+
+    local JQ_FILTER=".$EDITION | map(select(.version|startswith(\"${VERSION_PREFIX}\")))|first|.version"
+
+    jq -r "$JQ_FILTER" < "$MM_VERSIONS"
+}
+
+# determine the exact version:
+VERSION=$(get_version "$EDITION" "$VERSION")
+
 get_checksum() {
     local EDITION=$1
     local VERSION=$2
-    "$RECIPE_DIR/mm_versions" | jq -r ".$EDITION[\"$VERSION\"].checksum"
+    local JQ_FILTER=".$EDITION | map(select(.version == \"${VERSION}\"))[]"
+    jq -r "$JQ_FILTER.checksum" < "$MM_VERSIONS"
 }
 
 get_url() {
     local EDITION=$1
     local VERSION=$2
-    "$RECIPE_DIR/mm_versions" | jq -r ".$EDITION[\"$VERSION\"].url"
+    local JQ_FILTER=".$EDITION | map(select(.version == \"${VERSION}\"))[]"
+    jq -r "$JQ_FILTER.url" < "$MM_VERSIONS"
 }
 
-[ "$CHECKSUM" ] || CHECKSUM=$(get_checksum "$EDITION" "$VERSION")
-
+# download the tarball:
 if [ -z "$ARCHIVE" ]; then
     URL=$(get_url "$EDITION" "$VERSION")
     ARCHIVE="$(fetch "$URL")"
 fi
+
+# verify the checksum:
+[ "$CHECKSUM" ] || CHECKSUM=$(get_checksum "$EDITION" "$VERSION")
 
 if [ "$CHECKSUM" ]; then
     check_sha256sum "$ARCHIVE" "$CHECKSUM"
@@ -77,7 +104,7 @@ jq '.LogSettings.FileLocation="/var/log/mattermost/"' \
 
 find "$PKG_DIR/client" -type f -exec chmod -c a-x {} \;
 
-debut_dh_make -p "mattermost-server_$VERSION"
+debut_dh_make -p "mattermost-server_${VERSION}"
 
 add_debian_files
 
