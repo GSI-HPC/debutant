@@ -208,21 +208,22 @@ debian_control()  {
     sed -i -e "s|^\($key:\) .*|\1 $value|" ${PKG_DIR}/debian/control
 }
 
-
+# install a generic debian/rules
 debian_rules() {
-    [ -e ${PKG_DIR}/debian/rules ] && cp ${PKG_DIR}/debian/rules ${PKG_DIR}/debian/rules.orig
-    cat > ${PKG_DIR}/debian/rules <<EOF
+    [ -e "${PKG_DIR}/debian/rules" ] &&
+        cp "${PKG_DIR}/debian/rules" "${PKG_DIR}/debian/rules.orig"
+    cat > "${PKG_DIR}/debian/rules" <<EOF
 #!/usr/bin/make -f
 %:
 EOF
 # emacs tends to turn tabs into spaces, we'll clarify this:
-    /bin/echo -e "\tdh \$@" >> ${PKG_DIR}/debian/rules
+    /bin/echo -e "\tdh \$@" >> "${PKG_DIR}/debian/rules"
 
     # stripping the provided binaries may or may not be a good idea
     # and breaks building for foreign architectures
-    echo "override_dh_strip:" >> ${PKG_DIR}/debian/rules
+    echo "override_dh_strip:" >> "${PKG_DIR}/debian/rules"
 
-    chmod a+rx ${PKG_DIR}/debian/rules
+    chmod a+rx "${PKG_DIR}/debian/rules"
 }
 
 
@@ -257,10 +258,10 @@ debian_installdocs() {
 #  TODO: Add them to the pkg documentation
 disable_install_scripts() {
     SCRIPT_DIR=debutant/original_install_scripts
-    mkdir -vp $PKG_DIR/$SCRIPT_DIR
+    mkdir -vp "$PKG_DIR/$SCRIPT_DIR"
     for script in preinst postinst prerm postrm; do
-        [ -r ${PKG_DIR}/debian/$script ] \
-            && mv -v ${PKG_DIR}/debian/$script $PKG_DIR/$SCRIPT_DIR
+        [ -r "${PKG_DIR}/debian/$script" ] \
+            && mv -v "${PKG_DIR}/debian/$script" "$PKG_DIR/$SCRIPT_DIR"
     done
     debian_installdocs $SCRIPT_DIR/
 }
