@@ -20,16 +20,17 @@
 
 # shift $(($OPTIND - 1))
 
+# currently not working, URL parameters are needed for proper download
+DOWNLOAD_URL="https://downloads.citrix.com/20098/icaclient_21.11.0.20_amd64.deb"
+DOWNLOAD_SHA256="1b069e316588782c162c323ae4bca47c9acc3fcab491800ad08932a80c52f792"
 
 PKG=$1
 
 if [ -z $PKG ]; then
-    PKG=`fetch https://downloads.citrix.com/13680/icaclient_13.7.0.10276927_amd64.deb`
+    PKG=$(fetch "$DOWNLOAD_URL")
     # test checksum:
-    echo "610ad493f910dfb49549717c29a4812b5c216270fc8b03011fc09e8d56b92448  $PKG" | sha256sum -c
+    echo "$DOWNLOAD_SHA256  $PKG" | sha256sum -c
 fi
-
-#extract "$ARCHIVE"
 
 [ $PKG ] || abort "Need an archive (*.deb) to extract icaclient"
 
@@ -94,14 +95,14 @@ sed -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g;s/selservice/selfservice/" \
     $PKG_DIR/usr/share/menu/icaclient > $PKG_DIR/debian/menu
 
 if [ -d $PKG_DIR/usr/share/applications/ ]; then
-    # only for 13.0
-    sed -i -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g;s| -icaroot| --icaroot|" \
-        $PKG_DIR/usr/share/applications/*desktop
-    echo "usr/share/applications/" >>  $PKG_DIR/debian/install
+    # only for 13.0: "s| -icaroot| --icaroot|"
+    sed -i~ -e "s|opt/Citrix/ICAClient|usr/lib/ICAClient|g" \
+        "$PKG_DIR/usr/share/applications/"*desktop
+    echo "usr/share/applications/" >>  "$PKG_DIR/debian/install"
 fi
 
 # wfcmgr vanished in 13.0:
-if [ -e $PKG_DIR/opt/Citrix/ICAClient/wfcmgr ]; then
+if [ -e "$PKG_DIR/opt/Citrix/ICAClient/wfcmgr" ]; then
     echo "/usr/lib/ICAClient/wfcmgr /usr/bin/icaclient" >> $PKG_DIR/debian/links
 elif [ -e $PKG_DIR/opt/Citrix/ICAClient/selfservice ] ; then
     echo "/usr/lib/ICAClient/selfservice /usr/bin/icaclient" \
@@ -109,17 +110,17 @@ elif [ -e $PKG_DIR/opt/Citrix/ICAClient/selfservice ] ; then
 fi
 
 # this will be linked to /etc/ssl/certs/:
-rm -r $PKG_DIR/opt/Citrix/ICAClient/keystore/cacerts
+rm -r "$PKG_DIR/opt/Citrix/ICAClient/keystore/cacerts"
 
 # more links ...
-for ini in `ls $PKG_DIR/etc/icaclient/nls/en/*.ini | xargs -n1 basename`; do
-    echo /etc/icaclient/nls/current/${ini} /usr/lib/ICAClient/config/${ini} \
-         >> $PKG_DIR/debian/links
+for ini in $(ls $PKG_DIR/etc/icaclient/nls/en/*.ini | xargs -n1 basename); do
+    echo "/etc/icaclient/nls/current/${ini} /usr/lib/ICAClient/config/${ini}" \
+         >> "$PKG_DIR/debian/links"
 done
 # more links ...
-for tmpl in `ls $PKG_DIR/opt/Citrix/ICAClient/nls/en/*.template | xargs -n1 basename`; do
-    echo /usr/lib/ICAClient/nls/en/${tmpl} /usr/lib/ICAClient/config/${tmpl} \
-         >> $PKG_DIR/debian/links
+for tmpl in $(ls $PKG_DIR/opt/Citrix/ICAClient/nls/en/*.template | xargs -n1 basename); do
+    echo "/usr/lib/ICAClient/nls/en/${tmpl} /usr/lib/ICAClient/config/${tmpl}" \
+         >> "$PKG_DIR/debian/links"
 done
 
 # move pkg install scripts out of the way for now:
