@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_strip:
+	:
+
+override_dh_shlibdeps:
+	dh_shlibdeps -lusr/lib/oracle/21/client64/lib
