@@ -1,24 +1,46 @@
 #!/bin/sh
 #
-# debianize the mathematica license server
+# Debutant recipe for Mathematica license server mathlm debian package
+#
+# Copyright 2013-2022 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+#
+# Authors:
+#  Christopher Huhn    <c.huhn@gsi.de>
+#  Bastian Neuburger   <b.neuburger@gsi.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# 1) zipfile must be provided manually 
-
+# zipfile or .sh installer must be provided manually:
 ARCHIVE=$1
 
-[ $ARCHIVE ] || abort "Need an archive to extract mathlm"
+[ "$ARCHIVE" ] || abort "Need an archive to extract mathlm"
 
 if [ "$2" ]; then
     ARCH=$2
 else
-    ARCH=`dpkg-architecture -qDEB_BUILD_ARCH`
+    ARCH=$(dpkg-architecture -qDEB_BUILD_ARCH)
 fi
 
-extract $ARCHIVE 
+if [ "$(mime_type "$ARCHIVE")" = 'text/x-shellscript' ]; then
+    INSTALLER=$ARCHIVE
+else
+    extract "$ARCHIVE"
 
-# lets assume there is only one shell script:
-INSTALLER=`find $BUILD_DIR -name '*.sh'`
+    # lets assume there is only one shell script:
+    INSTALLER=$(find "$BUILD_DIR" -name '*.sh')
+fi
 
 PACKAGE=mathlm
 VERSION=$(sed -ne 's/label="\(Wolfram \)\?MathLM \([0-9.]\+\) for UNIX Installer Archive"/\2/p' "$INSTALLER")
@@ -33,7 +55,7 @@ debut_dh_make
 # disable dh_strip (for cross-building):
 debian_rules
 
-build_architecture $ARCH
+build_architecture "$ARCH"
 
 SOURCE_DIR=Unix/bin/Linux
 
@@ -48,7 +70,7 @@ Unix/man/mathlm.1
 Unix/man/monitorlm.1
 EOF
 
-echo /var/log/mathlm > $PKG_DIR/debian/dirs
+echo /var/log/mathlm > "$PKG_DIR/debian/dirs"
 
 add_debian_files
 
