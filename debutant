@@ -294,15 +294,17 @@ drop_result() {
 extract() {
     local blob="$1"
     local dir=$2
-    local mime=`file --brief --mime-type "$blob"`
+    local mime
 
-    if [ ! -r $blob ]; then
-        [ -r $BUILD_DIR/$blob ] && blob=$BUILD_DIR/$blob
+    if [ ! -r "$blob" ]; then
+        [ -r "$BUILD_DIR/$blob" ] && blob=$BUILD_DIR/$blob
     fi
 
     [ "$dir" ] || dir=$BUILD_DIR
 
     [ -d "$dir" ] || mkdir -p "$dir"
+
+    mime=$(mime_type "$blob")
 
     case $mime in
 
@@ -310,11 +312,11 @@ extract() {
             case $blob in
                 # TAR file:
                 *.tar.gz|*.tgz)
-                    tar xfz $blob -C $dir
+                    tar xfz "$blob" -C "$dir"
                     ;;
                 # something else:
                 *)
-                    gunzip -cd > $dir/`basename "$blob" .gz`
+                    gunzip -cd > "$dir/$(basename "$blob") .gz"
                     ;;
             esac
             ;;
@@ -386,6 +388,10 @@ list_recipes() {
     done
 }
 
+# detect the mime type of a file
+mime_type() {
+    file --brief --mime-type "$1"
+}
 
 prepare() {
     # some preparations:
