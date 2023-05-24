@@ -32,7 +32,9 @@ debut_dh_make -p "${PACKAGE}_${VERSION}"      # create debian/… for packaging
 debian_install "/usr/share/kyocera9.2/ppd9.2/*ppd /usr/share/ppd/kyocera"
 debian_install "/usr/lib/cups/filter /usr/lib/cups/"
 
-add_dependency python python-pypdf2
+# the package ships a copy of PyPDF3 but also seems to work with PyPDF2 provided by Debian:
+add_dependency python3 python3-pypdf2
+sed -i -e "s/PyPDF3/PyPDF2/" "$PKG_DIR/usr/lib/cups/filter/kyofilter_pre_H"
 
 # cp "$BUILD_DIR/ReleaseNotes.pdf" "$PKG_DIR"
 
