@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# Repackage kyodialog from "Linux Universal Driver" and
+#  strip everything but the PPDs and the filters
+#
+
+ARCHIVE=$1
+
+# zip archive:
+extract "$ARCHIVE"
+
+# upstream debian package:
+DEB_BUILD_ARCH=$(dpkg-architecture -qDEB_BUILD_ARCH)
+PACKAGE=kyodialog
+
+PKG_FILE=$(ls "$BUILD_DIR/Debian/EU/kyodialog_$DEB_BUILD_ARCH/$PACKAGE"_*.deb)
+
+# determine version, add dbtnt suffix if missing:
+VERSION=$(dpkg-deb -I "$PKG_FILE" | sed -ne "s/ Version: //p")
+
+if ! expr "$VERSION" : '.*+dbtnt.[0-9]\+$' > /dev/null; then
+    VERSION="${VERSION}+dbtnt.${REVISION}"
+fi
+
+PKG_DIR="$BUILD_DIR/$PACKAGE-$VERSION"
+
+extract "$PKG_FILE" "$PKG_DIR"
+
+debut_dh_make -p "${PACKAGE}_${VERSION}"      # create debian/… for packaging
+
+# packaging refinements ...
+debian_install "/usr/share/kyocera9.2/ppd9.2/*ppd /usr/share/ppd/kyocera"
+debian_install "/usr/lib/cups/filter /usr/lib/cups/"
+
+add_dependency python python-pypdf2
+
+# cp "$BUILD_DIR/ReleaseNotes.pdf" "$PKG_DIR"
+
+cp "$PKG_DIR/usr/share/doc/${PACKAGE}/copyright" "$PKG_DIR/debian/copyright"
+
+build_package --keep-revision        # runs debuild
+
+# copy back results from $BUILD_DIR to the current directory
+drop_result
