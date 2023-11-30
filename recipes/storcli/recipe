@@ -1,14 +1,33 @@
 # -*- sh -*-
 #
-# storcli - CLI to LSI/Broadcom MegaRAID controllers
+# Copyright:: 2018-2023 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+#
+# Authors:
+#  Christopher Huhn   <C.Huhn@gsi.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+#
+# Debutant recipe for storcli - CLI to LSI/Broadcom MegaRAID controllers
 #
 
 if [ -z "$1" ]; then
     # download does not work atm.
     echo "You have to download storcli manually for now" >&1
+    xdg-open "https://docs.broadcom.com/docs/Unified_storcli_all_os_7.2309.0000.0000.zip"
     exit 1
-    URL="https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/${VERSION}_Unified_StorCLI.zip"
-    ARCHIVE=$(fetch "$URL")
+    # ARCHIVE=$(fetch "$URL")
 else
     ARCHIVE=$1
 fi
@@ -17,7 +36,7 @@ extract "$ARCHIVE"
 
 # yo dawg, I herd you like zip, so I put an zip in your zip
 #  so you can unzip while you unzip
-#extract $BUILD_DIR/Unified_storcli_all_os.zip
+extract $BUILD_DIR/storcli_rel/Unified_storcli_all_os.zip
 
 VERSION=$(dpkg-deb -I "$BUILD_DIR/Unified_storcli_all_os/Ubuntu"/storcli_*_all.deb | sed -ne 's/ Version: //p')
 
@@ -26,7 +45,9 @@ PKG_DIR="$BUILD_DIR/storcli-${VERSION}"
 extract "$BUILD_DIR/Unified_storcli_all_os/Ubuntu/storcli_${VERSION}_all.deb" \
         "$PKG_DIR"
 
-cp -v "$BUILD_DIR/Unified_storcli_all_os/"*.pdf "$BUILD_DIR/Unified_storcli_all_os/"*.ini "$BUILD_DIR/Unified_storcli_all_os/"*.txt "$PKG_DIR"
+cp -v "$BUILD_DIR/Unified_storcli_all_os/"*.pdf \
+   "$BUILD_DIR/Unified_storcli_all_os/"*.ini \
+   "$BUILD_DIR/Unified_storcli_all_os/"*.txt "$PKG_DIR"
 
 debut_dh_make
 
