@@ -60,7 +60,9 @@ case "$PACKAGE" in
         ;;
 esac
 
-echo "activate-noawait ldconfig" > "$PKG_DIR/debian/$PACKAGE.triggers"
+if [ "$PACKAGE" != 'oracle-instantclient-basic' ]; then
+    add_dependency oracle-instantclient-basic
+fi
 
 build_package --keep-revision
 
