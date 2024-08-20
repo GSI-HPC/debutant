@@ -1,5 +1,7 @@
 #!/usr/bin/make -f
 
+ORACLE_MAJOR_VERSION = %%%ORACLE_MAJOR_VERSION%%%
+
 %:
 	dh $@
 
@@ -7,4 +9,4 @@ override_dh_strip:
 	:
 
 override_dh_shlibdeps:
-	dh_shlibdeps -lusr/lib/oracle/21/client64/lib
+	dh_shlibdeps -lusr/lib/oracle/$(ORACLE_MAJOR_VERSION)/client64/lib

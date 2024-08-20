@@ -1,9 +1,13 @@
 # -*- sh -*-
 #
+# packaging recipe for oracle-instantclient-basic,
+#                      oracle-instantclient-sqlplus,
+#                      oracle-instantclient-tools
+#
+# see https://www.oracle.com/de/database/technologies/instant-client/linux-x86-64-downloads.html
 #
 
 URL="https://download.oracle.com/otn_software/linux/instantclient/oracle-instantclient-basic-linuxx64.rpm"
-
 
 if [ "$1" ]; then
     ARCHIVE=$1
@@ -13,6 +17,7 @@ fi
 
 PACKAGE=$(LANG=C rpm -qp --queryformat '%{NAME}' "$ARCHIVE")
 VERSION=$(LANG=C rpm -qp --queryformat '%{VERSION}' "$ARCHIVE")
+MAJOR_VERSION=$(echo $VERSION | sed -e "s/^\([0-9]\+\)\..*/\1/")
 
 extract "$ARCHIVE"
 
@@ -20,20 +25,40 @@ PKG_DIR=$(find "$BUILD_DIR" -type d -name 'oracle-instantclient*')
 
 # mv the network/admin dir (for tnsnames.ora and friends) to /etc:
 mkdir -p "$PKG_DIR/etc/oracle"
-mv "$PKG_DIR/usr/lib/oracle/21/client64/lib/network" "$PKG_DIR/etc/oracle" || true
+mv "$PKG_DIR/usr/lib/oracle/$MAJOR_VERSION/client64/lib/network" "$PKG_DIR/etc/oracle" || true
 
 # replace the debian/ files created by alien:
 add_debian_files
+
+# please lintian:
+echo 10 > "$PKG_DIR/debian/compat"
+debian_control Priority optional
+debian_control Maintainer "$DEBFULLNAME <$DEBEMAIL>"
+debian_control Section database
+
+echo "usr/share/oracle/$MAJOR_VERSION/client64/doc/*" > "$PKG_DIR/debian/docs"
+
+sed -i -e "s/%%%ORACLE_MAJOR_VERSION%%%/$MAJOR_VERSION/" "$PKG_DIR/debian/rules"
 
 # https://lintian.debian.org/tags/maintscript-calls-ldconfig.html :
 disable_install_scripts
 
 # add lib dir to ldconfig - but only for the basic package
-if [ "$PACKAGE" == "oracle-instantclient-basic" ]; then
-    mkdir -p "$PKG_DIR/etc/ld.so.conf.d"
-    echo "/usr/lib/oracle/21/client64/lib" > "$PKG_DIR/etc/ld.so.conf.d/oracle-instantclient"
-    debian_install /etc/ld.so.conf.d
-fi
+case "$PACKAGE" in
+    oracle-instantclient-basic)
+        debian_install /etc/ld.so.conf.d
+        echo "etc/oracle/network usr/lib/oracle/$MAJOR_VERSION/client64/lib/network" >> "$PKG_DIR/debian/links"
+        ;;
+    oracle-instantclient-devel)
+        debian_install usr/include/oracle usr/include
+        debian_installexamples usr/share/oracle/$MAJOR_VERSION/client64/demo
+        ;;
+    oracle-instantclient-sqlplus)
+        echo "/usr/lib/oracle/$MAJOR_VERSION/client64/bin/sqlplus /usr/bin/sqlplus" >> "$PKG_DIR/debian/links"
+        debian_install usr/include/oracle usr/include
+        debian_installexamples usr/share/oracle/$MAJOR_VERSION/client64/demo
+        ;;
+esac
 
 echo "activate-noawait ldconfig" > "$PKG_DIR/debian/$PACKAGE.triggers"
 
