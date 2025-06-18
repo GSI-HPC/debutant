@@ -29,7 +29,7 @@ extract "$PKG_FILE" "$PKG_DIR"
 debut_dh_make -p "${PACKAGE}_${VERSION}"      # create debian/… for packaging
 
 # packaging refinements ...
-debian_install "/usr/share/kyocera9.2/ppd9.2/*ppd /usr/share/ppd/kyocera"
+debian_install "/usr/share/kyocera9.3/ppd9.3/*ppd /usr/share/ppd/kyocera"
 debian_install "/usr/lib/cups/filter /usr/lib/cups/"
 
 # the package ships a copy of PyPDF3 but also seems to work with PyPDF2 provided by Debian:
