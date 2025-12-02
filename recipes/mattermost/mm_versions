@@ -36,7 +36,7 @@ data = Net::HTTP.get(URI(version_list))
 
 versions = {}
 
-scan_regex = %r{Mattermost (Team|Enterprise) Edition v(\d+\.\d+\.\d+).*?\n  - ``(https://releases\.mattermost\.com/.*?\.tar\.gz)``\n  - SHA-256 Checksum: ``([0-9a-f]+)``}m
+scan_regex = %r{Mattermost (Team|Enterprise) Edition v(\d+\.\d+\.\d+).*?\n *- ``(https://releases\.mattermost\.com/.*?\.tar\.gz)``\n *- SHA-256 Checksum: ``([0-9a-f]+)``}m
 
 data.scan(scan_regex).each do |flavor, version, url, checksum|
   flavor.downcase!
