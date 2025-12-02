@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 #
-# Copyright 2021 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+# Copyright 2021-2025 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
 #
 # Author:
 #   Christopher Huhn <c.huhn@gsi.de>
@@ -28,7 +28,7 @@ require 'json'
 require 'net/http'
 
 version_list = 'https://raw.githubusercontent.com/mattermost/docs/master'\
-               '/source/upgrade/version-archive.rst'
+               '/source/product-overview/version-archive.rst'
 
 data = Net::HTTP.get(URI(version_list))
 
