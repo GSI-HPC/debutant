@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #    debutant - Debian packaging framework for binary blobs
-#    Copyright (C) 2015 - 2022  GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
+#    Copyright (C) 2015 - 2026  GSI Helmholtzzentrum fuer Schwerionenforschung GmbH
 #    Author: Christopher Huhn <c.huhn@gsi.de>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -141,7 +141,10 @@ build_package() {
         current_version=$(head -1 debian/changelog |
                                  sed -e 's/.*(\([[:alnum:]:_+.~-]\+\)).*/\1/')
 
-        if [ "$1" != "--keep-revision" ]; then
+        if [ "$1" == "--keep-revision" ]; then
+            # do nothing, just remove the argument from ARGV
+            shift
+        else
             if [ -z "$VERSION" ]; then
                 new_version=$current_version
             else
@@ -163,9 +166,9 @@ build_package() {
                       "Build by debutant"
         fi
         if [ "$PBUILDER" ]; then
-            pdebuild  --pbuilder cowbuilder
+            pdebuild  --pbuilder cowbuilder $@
         else
-            debuild -b -us -uc -a${DEB_HOST_ARCH}
+            debuild -b -us -uc -a${DEB_HOST_ARCH} $@
         fi
     )
 }
