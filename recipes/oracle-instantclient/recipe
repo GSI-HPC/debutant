@@ -23,6 +23,12 @@ extract "$ARCHIVE"
 
 PKG_DIR=$(find "$BUILD_DIR" -type d -name 'oracle-instantclient*')
 
+# add possibility to specify a different revision:
+if [ -z "$REVISION" ]; then
+    REVISION=$(head -1 "$PKG_DIR/debian/changelog" |
+                   sed -e "s/.*($VERSION-\([[:alnum:]:_+.]\+\)).*/\1/")
+fi
+
 # mv the network/admin dir (for tnsnames.ora and friends) to /etc:
 mkdir -p "$PKG_DIR/etc/oracle"
 mv "$PKG_DIR/usr/lib/oracle/$MAJOR_VERSION/client64/lib/network" "$PKG_DIR/etc/oracle" || true
@@ -48,6 +54,14 @@ case "$PACKAGE" in
     oracle-instantclient-basic)
         debian_install /etc/ld.so.conf.d
         echo "etc/oracle/network usr/lib/oracle/$MAJOR_VERSION/client64/lib/network" >> "$PKG_DIR/debian/links"
+        # On Trixie libaio became libaiot64 and
+        # we have to trick oracle-instantclient into finding it:
+        if [ -e  /usr/lib/x86_64-linux-gnu/libaio.so.1t64 ]; then
+            echo "usr/lib/x86_64-linux-gnu/libaio.so.1t64"\
+                 " usr/lib/x86_64-linux-gnu/libaio.so.1" \
+                 >> "$PKG_DIR/debian/links"
+            debian_control Conflicts libaio1
+        fi
         ;;
     oracle-instantclient-devel)
         debian_install usr/include/oracle usr/include
@@ -64,6 +78,6 @@ if [ "$PACKAGE" != 'oracle-instantclient-basic' ]; then
     add_dependency oracle-instantclient-basic
 fi
 
-build_package --keep-revision
+build_package
 
 drop_result
